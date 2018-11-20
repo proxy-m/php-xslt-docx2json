@@ -1,0 +1,63 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "e1e4edbdb2c470bc41cea5921cf8baaf",
+    "content-hash": "d5589d40cf23b715fdbb3a5cb9ccef04",
+    "packages": [
+        {
+            "name": "genkgo/xsl",
+            "version": "0.6.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/genkgo/xsl.git",
+                "reference": "f0ca8059059320cafb666278081fd74c8cc00e75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/genkgo/xsl/zipball/f0ca8059059320cafb666278081fd74c8cc00e75",
+                "reference": "f0ca8059059320cafb666278081fd74c8cc00e75",
+                "shasum": ""
+            },
+            "require": {
+                "ext-xsl": "*",
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "genkgo/cache": "~0.2.0",
+                "phpunit/phpunit": "~6.0"
+            },
+            "suggest": {
+                "genkgo/cache": "Cache transpiled templates"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Genkgo\\Xsl\\": [
+                        "src"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "XSL 2.0 Transpiler in PHP",
+            "time": "2018-10-11 11:12:47"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "ext-zlib": "*",
+        "php": ">=5.3.0",
+        "ext-libxml": "*",
+        "lib-libxml": ">=2.7.7",
+        "ext-xsl": "*"
+    },
+    "platform-dev": []
+}
