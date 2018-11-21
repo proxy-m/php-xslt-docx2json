@@ -16,15 +16,16 @@
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes" encoding="UTF-8" />
     <xsl:strip-space elements="*"/>
 
-    <!-- <xsl:template match="/"><xsl:apply-templates /></xsl:template> -->
+    <xsl:template match="/">{<xsl:variable name="rootNode"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($rootNode, 1, string-length($rootNode) - 1)"/>}</xsl:template>
 
     <!-- document properties .e.g title -->
     <xsl:template match="head">
 "properties" : {<xsl:apply-templates/>},</xsl:template>
-    <xsl:template match="head/*"><xsl:value-of select="local-name()"/>: '<xsl:value-of select="."/>',</xsl:template>
+    <xsl:template match="head/*">"<xsl:value-of select="local-name()"/>": "<xsl:value-of select="."/>"<xsl:if test="position() != last()">,</xsl:if></xsl:template>
 
     <xsl:template match="body">
-"items" : [<xsl:apply-templates/>],</xsl:template>
+"data" : [<xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($itemsList, 1, string-length($itemsList) - 1)"/>],</xsl:template>
+    <!-- <xsl:template match="body">"items" : [<xsl:apply-templates/>],</xsl:template> -->
     <xsl:template match="toc">
 {
     "type" : "toc",
@@ -37,8 +38,8 @@
             <xsl:when test="$valueOfContent = ''"></xsl:when>
             <xsl:otherwise>
 {
-    "type" : "<xsl:value-of select="@type"/>",
-    "style" : "<xsl:value-of select="@style"/>",
+    <!-- "type" : "<xsl:value-of select="@type"/>", -->
+    <!-- "style" : "<xsl:value-of select="@style"/>", -->
     "content" : "<xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/>" 
 },</xsl:otherwise>
     </xsl:choose></xsl:template>

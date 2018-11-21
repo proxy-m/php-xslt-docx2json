@@ -78,7 +78,7 @@
         /**
          * $from_xml_filename[0] must be root xml document.
          */
-        static function transform_with_xslt(array $from_xml_filename, string $by_xsl_style) { 
+        static function transform_with_xslt(array $from_xml_filename, string $by_xsl_style, $source_docx_filename) { 
             if (!$from_xml_filename || count($from_xml_filename)==0) {
                 return FALSE;
             }
@@ -100,6 +100,10 @@
 
             $xsl = new XSLTProcessor();
             $xsl->importStyleSheet($xsldoc);
+            $xsl->setParameter("", "sourceXmlFileName", $from_xml_filename[0]);
+            if ($source_docx_filename) {
+                $xsl->setParameter("", "sourceDocxFileName", $source_docx_filename);
+            }
             $outputXmlData = $xsl->transformToXml($xmldoc);
             return $outputXmlData;
         }
@@ -136,8 +140,8 @@
             return $doc;
         }
 
-        static function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename) { 
-            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
+        static function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
+            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
             if (!$outputXmlData) {
                 return FALSE;
             }
@@ -155,8 +159,8 @@
             return ($good === FALSE) ? FALSE : $to_filename;
         }
 
-        static function transform_with_xslt_to_json(array $from_xml_filename, string $by_xsl_style, string $to_filename) { 
-            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
+        static function transform_with_xslt_to_json(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
+            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
             if (!$outputXmlData) {
                 return FALSE;
             }
@@ -193,7 +197,7 @@
             if (!$this->source_extracted_xml) {
                 $source_extracted_xml_dir = $this->source_docx_filename . "_dir";
                 self::force_crate_parent_dir($source_extracted_xml_dir);
-            $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml"];
+            $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml", "docProps/app.xml", "docProps/core.xml"];
                 $this->source_extracted_xml = self::extract_entries_from_zip($this->source_docx_filename, $entry_names, $source_extracted_xml_dir);            
             }
             return $this->source_extracted_xml;
@@ -210,13 +214,13 @@
                 $output_xml_filename = './output/' . basename($forced_source_xml[0]) . "_out.xml"; ///'./output/output.xml';
             }
             self::force_crate_parent_dir($output_xml_filename);
-            $this->output_xml_filename = self::transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename);
+            $this->output_xml_filename = self::transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename, $this->source_docx_filename);
             return $this->output_xml_filename;
         }
 
         protected function transform_xml_to_json(string $output_xml_filename, string $output_json_filename) {
             self::force_crate_parent_dir($output_json_filename);
-            return $this->transform_with_xslt_to_json([$output_xml_filename], $this->xslt_transformation_2_to_json, $output_json_filename);
+            return $this->transform_with_xslt_to_json([$output_xml_filename], $this->xslt_transformation_2_to_json, $output_json_filename, $this->source_docx_filename);
         }
 
         public function transform_to_json($output_xml_filename, $output_json_filename) {

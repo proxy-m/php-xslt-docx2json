@@ -23,6 +23,8 @@
         <xml>
             <head>
                 <xsl:apply-templates select="w:document/cp:coreProperties"/>
+                <sourceXmlFileName><xsl:value-of select="$sourceXmlFileName"/></sourceXmlFileName>
+                <sourceDocxFileName><xsl:value-of select="$sourceDocxFileName"/></sourceDocxFileName>
             </head>
             <body>
                 <xsl:apply-templates />
