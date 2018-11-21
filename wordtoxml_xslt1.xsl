@@ -1,197 +1,467 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
 <xsl:stylesheet version="1.0"
-    xmlns:i="urn:docx2md:intermediary"
-    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-    xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
-    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    xmlns:rels="http://schemas.openxmlformats.org/package/2006/relationships"
-    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-    xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns:rels="http://schemas.openxmlformats.org/package/2006/relationships"
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+                xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+                xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+                xmlns:dc="http://purl.org/dc/elements/1.1/"
+                xmlns:dcterms="http://purl.org/dc/terms/"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                exclude-result-prefixes="w r rels a wp cp dc dcterms mc">
 
-    <xsl:template match="/w:document">
-        <i:document>
-            <xsl:apply-templates />
-        </i:document>
-    </xsl:template>
+    <xsl:output method="xml"
+                indent="no"
+                encoding="UTF-8"/>
+    <xsl:strip-space elements="*"/>
 
-    <xsl:template match="w:body">
-        <i:body>
-            <xsl:apply-templates />
-        </i:body>
-    </xsl:template>
-
-    <xsl:template match="rels:Relationships" />
-
-    <!-- Heading styles -->
-    <xsl:template match="w:p[w:pPr/w:pStyle/@w:val[starts-with(., 'Heading')]]">
-        <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val[starts-with(., 'Heading')]" />
-        <xsl:variable name="level" select="substring($style, 8, 1)" />
-        <xsl:variable name="type" select="translate(substring($style, 9), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')" />
-        <xsl:if test="count(w:r)">
-            <i:heading>
-                <xsl:attribute name="level">
-                    <xsl:value-of select="$level" />
-                </xsl:attribute>
-                <xsl:if test="$type != ''">
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="$type" />
-                    </xsl:attribute>
-                </xsl:if>
+    <xsl:template match="/">
+        <xml>
+            <head>
+                <xsl:apply-templates select="w:document/cp:coreProperties"/>
+            </head>
+            <body>
                 <xsl:apply-templates />
-            </i:heading>
-        </xsl:if>
+            </body>
+        </xml>
     </xsl:template>
 
-    <!-- Regular paragraph style -->
+    <!-- document data e.g. title and description -->
+    <xsl:template match="dc:* | dcterms:*">
+        <xsl:element name="{local-name()}">
+            <xsl:value-of select="."/>
+        </xsl:element>
+    </xsl:template>
+
+    <!-- 'alternate content' is skipped -->
+    <xsl:template match="mc:AlternateContent" mode="ol">
+
+    </xsl:template>
+
+    <!-- TOC -->
+    <xsl:template match="w:p[w:pPr/w:pStyle/@w:val[starts-with(., 'ContentsHeading')]]" mode="toc">
+        <toc>
+            <heading><xsl:value-of select="."/></heading>
+            <links>
+               <xsl:apply-templates select="//w:p" mode="toc_section"/>
+            </links>
+        </toc>
+    </xsl:template>
+    <xsl:template match="w:p[w:pPr/w:pStyle/@w:val[starts-with(., 'Contents1')]]" mode="toc_section">
+       <xsl:variable name="link_text">
+           <xsl:call-template name="link_text">
+               <xsl:with-param name="link" select="w:hyperlink"/>
+           </xsl:call-template>
+       </xsl:variable>
+       <link name="{$link_text}"
+             target="{w:hyperlink/@w:anchor}"
+             style="{w:pPr/w:pStyle/@w:val}">
+       </link>
+    </xsl:template>
+    <xsl:template match="w:t" mode="toc_section"/>
+
+    <!-- Alternate TOC spec -->
+    <xsl:template match="w:sdt" priority="1"/>
+    <xsl:template match="w:sdt[w:sdtContent/w:p/w:hyperlink]" priority="2">
+        <toc>
+            <xsl:apply-templates/>
+        </toc>
+    </xsl:template>
+    <xsl:template match="w:sdtContent">
+        <heading>
+            <xsl:value-of select="w:p[w:pPr/w:pStyle[@w:val='ContentsHeading']]/w:r/w:t"/>
+            <xsl:value-of select="w:p[w:pPr/w:pStyle[@w:val='TOCHeading']]/w:r/w:t"/>
+        </heading>
+        <links>
+            <xsl:for-each select="w:p[w:hyperlink]">
+                <xsl:variable name="link_text">
+                    <xsl:call-template name="link_text">
+                        <xsl:with-param name="link" select="w:hyperlink"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <link name="{$link_text}"
+                      target="{w:hyperlink/@w:anchor}"
+                      style="{w:pPr/w:pStyle/@w:val}">
+                </link>
+            </xsl:for-each>
+        </links>
+    </xsl:template>
+    <xsl:template name="link_text">
+        <xsl:param name="link"/>
+        <xsl:value-of select="$link/w:r/w:t"/>
+        <!--
+        <xsl:for-each select="$link/w:r/w:t">
+            <xsl:value-of select="."/> &#160;-
+        </xsl:for-each>
+        -->
+    </xsl:template>
+
+    <!-- footnote Reference -->
+    <xsl:template match="w:footnoteReference">
+        <footnoteReference refId="{@w:id}" />
+    </xsl:template>
+
+    <!-- Basic Content -->
     <xsl:template match="w:p">
-        <xsl:if test="count(w:r)">
-            <i:para>
-                <xsl:apply-templates />
-            </i:para>
-        </xsl:if>
-        <!-- Horizontal line -->
-        <xsl:if test="count(w:pPr/w:pBdr)">
-            <i:line>---</i:line>
-        </xsl:if>
+        <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val"/>
+        <xsl:choose>
+            <!--<xsl:when test="w:pPr/w:widowControl"></xsl:when>-->
+            <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'ContentsHeading' ) ] ]">
+                <xsl:apply-templates select="self::*" mode="toc"/>
+            </xsl:when>
+            <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'Contents1' ) ] ]"/>
+            <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'Heading' ) ] ]">
+                <item
+                        type="heading"
+                        style="{w:pPr/w:pStyle/@w:val}"
+                        size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}"
+                >
+                    <content>
+                        <xsl:apply-templates/>
+                    </content>
+                </item>
+            </xsl:when>
+            <xsl:when test="w:pPr/w:numPr">
+                <xsl:apply-templates select="self::*" mode="ol"/>
+            </xsl:when>
+            <xsl:when test="w:r/w:drawing">
+                <item
+                        type="image"
+                        style="{w:pPr/w:pStyle/@w:val}"
+                        size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
+                    <content>
+                        <xsl:apply-templates/>
+                    </content>
+                </item>
+            </xsl:when>
+            <xsl:otherwise>
+                <item
+                        type="section"
+                        id="{../@w:id}"
+                        style="{w:pPr/w:pStyle/@w:val}"
+                        size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
+                    <content>
+                        <xsl:apply-templates/>
+                    </content>
+                </item>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
-    <!-- Table -->
-    <xsl:template match="w:tbl">
-        <i:table>
-            <xsl:apply-templates />
-        </i:table>
-    </xsl:template>
-    <!-- Table: row -->
-    <xsl:template match="w:tbl/w:tr">
-        <xsl:if test="count(w:tc) and position() &lt; 4">
-            <i:header>
-                <xsl:apply-templates />
-            </i:header>
-        </xsl:if>
-        <xsl:if test="count(w:tc) and position() &gt; 3">
-            <i:row>
-                <xsl:apply-templates />
-            </i:row>
-        </xsl:if>
-    </xsl:template>
-    <!-- Table: cell -->
-    <xsl:template match="w:tbl/w:tr/w:tc">
-        <xsl:if test="count(w:p/w:r/w:t)">
-            <i:cell>
-                <xsl:apply-templates />
-            </i:cell>
-        </xsl:if>
-
-        <!-- Table: blank cells -->
-        <xsl:if test="count(w:p/w:r/w:t) &lt; 1">
-            <i:cell>-</i:cell>
-        </xsl:if>
-    </xsl:template>
-
-    <!-- List items -->
-    <xsl:template match="w:p[w:pPr/w:numPr]">
-        <xsl:if test="count(w:r)">
-            <i:listitem level="{w:pPr/w:numPr/w:ilvl/@w:val}" type="{w:pPr/w:numPr/w:numId/@w:val}">
-                <xsl:apply-templates />
-            </i:listitem>
-        </xsl:if>
-    </xsl:template>
-    <xsl:template match="w:p[w:pPr/w:pStyle/@w:val = 'ListBullet']">
-        <xsl:if test="count(w:r)">
-            <i:listitem level="0" type="1">
-                <xsl:apply-templates />
-            </i:listitem>
-        </xsl:if>
-    </xsl:template>
-    <xsl:template match="w:p[w:pPr/w:pStyle/@w:val = 'ListNumber']">
-        <xsl:if test="count(w:r)">
-            <i:listitem level="0" type="2">
-                <xsl:apply-templates />
-            </i:listitem>
-        </xsl:if>
-    </xsl:template>
-
-    <!-- Text content -->
     <xsl:template match="w:r">
-        <xsl:apply-templates />
-    </xsl:template>
-    <xsl:template match="w:t">
-        <!-- Normal -->
-        <xsl:value-of select="." />
-    </xsl:template>
-    <xsl:template match="w:r[w:rPr/w:b and not(w:rPr/w:i)]/w:t">
-        <!-- Bold -->
-        <i:bold>
-            <xsl:value-of select="." />
-        </i:bold>
-    </xsl:template>
-    <xsl:template match="w:r[w:rPr/w:i and not(w:rPr/w:b)]/w:t">
-        <!-- Italic -->
-        <i:italic>
-            <xsl:value-of select="." />
-        </i:italic>
-    </xsl:template>
-    <xsl:template match="w:r[w:rPr/w:b and w:rPr/w:i]/w:t">
-        <!-- Bold + Italic -->
-        <i:bold>
-            <i:italic>
-                <xsl:value-of select="." />
-            </i:italic>
-        </i:bold>
-    </xsl:template>
-    <xsl:template match="w:r[w:rPr/w:strike]/w:t">
-        <!-- Strikethrough -->
-        <i:strikethrough>
-            <xsl:value-of select="." />
-        </i:strikethrough>
-    </xsl:template>
-    <xsl:template match="w:br">
-        <i:linebreak />
+        <xsl:choose>
+            <xsl:when test="w:rPr/w:b[not(@w:val)]"><b><xsl:apply-templates/></b></xsl:when>
+            <xsl:when test="w:rPr/w:b[@w:val='true']"><b><xsl:apply-templates/></b></xsl:when>
+            <xsl:when test="w:rPr/w:i[not(@w:val)]"><xsl:apply-templates/></xsl:when>
+            <xsl:when test="w:rPr/w:i[@w:val='true']"><xsl:apply-templates/></xsl:when>
+            <xsl:when test="w:rPr/w:highlight"><span style="background-color:{w:rPr/w:highlight/@w:val}"><xsl:apply-templates/></span></xsl:when>
+            <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
-    <!-- Hyperlinks -->
-    <xsl:template match="w:p[w:hyperlink]">
-        <xsl:variable name="id" select="w:hyperlink/@r:id" />
-        <xsl:if test="count(w:hyperlink/w:r)">
-            <i:link>
-                <xsl:attribute name="href">
-                    <xsl:value-of select="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@Target" />
-                </xsl:attribute>
-                <xsl:if test="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@TargetMode">
-                    <xsl:attribute name="target">
-                        <xsl:value-of select="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@TargetMode" />
+    <xsl:template match="w:t"><xsl:value-of select="translate(.,'�Â','')"/></xsl:template>
+
+    <!--lists-->
+    <!-- next template's only purpose is to fix in a bug in Word where headings
+    sometimes get put into List Elements for no reason -->
+    <xsl:template match="w:p[w:pPr/w:numPr][starts-with(w:pPr/w:pStyle/@w:val,'Heading')]" mode="ol">
+        <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val"/>
+        <item
+                type='heading'
+                style="{w:pPr/w:pStyle/@w:val}"
+                size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
+            <content>
+                <xsl:apply-templates/>
+            </content>
+        </item>
+    </xsl:template>
+
+    <!-- OK, let's get started. First remove all list items from output -->
+    <xsl:template match="w:p[w:pPr/w:numPr]" priority="1" mode="ol"></xsl:template>
+
+    <!--
+
+      Now just match any list item not preceded by a list item.
+
+      We need to match any element not preceded by a listitem *or*
+      preceded by a list item at a different level.
+
+      We also need to check if the previous element is a list item and also a Heading, due to
+      bug in Word that causes Headers to sometimes get categorized as list elements.
+
+      The preceding element is not a list element:
+      not(preceding-sibling::*[1][self::w:p[w:pPr/w:numPr]]) or
+
+      The preceding element is a list element but it is at a different level
+      not(preceding-sibling::*[1]/w:pPr/w:numPr/w:ilvl/@w:val = self::w:p/w:pPr/w:numPr/w:ilvl/@w:val)
+
+    -->
+    <xsl:template
+            match="w:p[w:pPr/w:numPr][
+                     (
+                       not(preceding-sibling::*[1][self::w:p[w:pPr/w:numPr]]) or
+                       not(preceding-sibling::*[1]/w:pPr/w:numPr/w:ilvl/@w:val &lt;= self::w:p/w:pPr/w:numPr/w:ilvl/@w:val)
+                     ) and
+                     not(starts-with(w:pPr/w:pStyle/@w:val,'Heading'))
+                   ]"
+            priority="2" mode="ol">
+        <xsl:variable name="numId" select="w:pPr/w:numPr/w:numId/@w:val"/>
+        <xsl:variable name="ilvl" select="w:pPr/w:numPr/w:ilvl/@w:val"/>
+        <xsl:variable name="listType">
+            <xsl:value-of
+                    select="/w:document/w:numbering/w:abstractNum[@w:abstractNumId=$numId]/w:lvl[@w:ilvl=$ilvl]/w:numFmt/@w:val"/>
+        </xsl:variable>
+        <xsl:variable name="elTypeAttr">
+            <xsl:call-template name="getElTypeAttr">
+                <xsl:with-param name="listType" select="$listType"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="elName">
+            <xsl:choose>
+                <xsl:when test="$listType='bullet'">ul</xsl:when>
+                <xsl:otherwise>ol</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <item heading="false" type="list">
+            <content>
+                <xsl:element name="{$elName}">
+                    <xsl:attribute name="type">
+                        <xsl:value-of select="$elTypeAttr"/>
                     </xsl:attribute>
-                </xsl:if>
-                <xsl:apply-templates />
-            </i:link>
-        </xsl:if>
+                    <xsl:attribute name="wtype">
+                        <xsl:value-of select="$listType"/>
+                    </xsl:attribute>
+                    <xsl:apply-templates select="." mode="ordered-list"/>
+                </xsl:element>
+            </content>
+        </item>
     </xsl:template>
 
-    <!-- Images -->
+    <!-- now match the list item and its next sibling, recursively so you get the entire group -->
+    <xsl:template match="w:p[w:pPr/w:numPr]" mode="ordered-list">
+        <xsl:variable name="level" select="w:pPr/w:numPr/w:ilvl/@w:val"/><!-- item level -->
+        <xsl:variable name="numId" select="w:pPr/w:numPr/w:numId/@w:val"/><!-- id of of list style -->
+        <xsl:variable name="indent">
+            <xsl:choose>
+                <xsl:when test="w:pPr/w:ind/@w:left">
+                    <xsl:value-of select="w:pPr/w:ind/@w:left"></xsl:value-of>
+                </xsl:when>
+                <xsl:otherwise>0</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable><!-- indent of of list style -->
+        <li lvl="{$level}">
+            <xsl:apply-templates/>
+        </li>
+
+        <!-- This block is a duplicate of block in previous template.. TODO: avoid duplication? -->
+        <xsl:variable name="listType">
+            <xsl:value-of
+                    select="/w:document/w:numbering/w:abstractNum[@w:abstractNumId=$numId]/w:lvl[@w:ilvl=$level]/w:numFmt/@w:val"/>
+        </xsl:variable>
+        <xsl:variable name="elTypeAttr">
+            <xsl:call-template name="getElTypeAttr">
+                <xsl:with-param name="listType" select="$listType"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="elName">
+            <xsl:choose>
+                <xsl:when test="$listType='bullet'">ul</xsl:when>
+                <xsl:otherwise>ol</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <!-- end duplicate block -->
+
+        <xsl:choose>
+            <!-- case of node is a different ilvl (indent level) than preceding node -->
+            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:numPr/w:ilvl/@w:val!=$level]]">
+                <xsl:if test="following-sibling::*[self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]][1]"><!-- avoid orphan list el -->
+
+                    <!-- get the attributes for the bullet styles -->
+                    <xsl:variable name="nextListType">
+                        <xsl:call-template name="getListType">
+                            <xsl:with-param name="nextItem"
+                                            select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$level]][1]"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:variable name="nextElTypeAttr">
+                        <xsl:call-template name="getElTypeAttr">
+                            <xsl:with-param name="listType" select="$nextListType"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    <!-- build the enclosing element (OL or UL) -->
+                    <xsl:element name="{$elName}">
+                        <xsl:attribute name="type">
+                            <xsl:value-of select="$nextElTypeAttr"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="wtype">
+                            <xsl:value-of select="$nextListType"/>
+                        </xsl:attribute>
+                        <xsl:apply-templates select="
+                       following-sibling::*[1]
+                         [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val>$level]]
+                         [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
+                       " mode="ordered-list"/>
+                    </xsl:element>
+                    <xsl:apply-templates select="
+                    following-sibling::*
+                      [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
+                       [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
+                     [1]
+                    " mode="ordered-list"/>
+                </xsl:if>
+            </xsl:when>
+
+            <!-- case of node is a different numId (style) than preceding node -->
+            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$numId]]">
+                <xsl:if test="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]][1]"><!-- avoid orphan list el -->
+                    <!-- get the attributes for the bullet styles -->
+                    <xsl:variable name="nextListType">
+                        <xsl:call-template name="getListType">
+                            <xsl:with-param name="nextItem"
+                                            select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$numId]][1]"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:variable name="nextElTypeAttr">
+                        <xsl:call-template name="getElTypeAttr">
+                            <xsl:with-param name="listType" select="$nextListType"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    <!-- build the enclosing element (OL or UL) -->
+                    <xsl:element name="{$elName}">
+                        <xsl:attribute name="type">
+                            <xsl:value-of select="$nextElTypeAttr"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="wtype">
+                            <xsl:value-of select="$nextListType"/>
+                        </xsl:attribute>
+                        <xsl:apply-templates select="following-sibling::*[1]
+                          [self::w:p[w:pPr/w:numPr/w:numId/@w:val>$numId]]
+                          [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
+                          " mode="ordered-list"/>
+                    </xsl:element>
+                </xsl:if>
+                <xsl:apply-templates
+                        select="following-sibling::*
+                          [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
+                          [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
+                          [1]"
+                        mode="ordered-list"/>
+            </xsl:when>
+
+            <!-- case of node w:ind (indent, e.g. bullet) greater than preceding node -->
+            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:ind/@w:left!=$indent]]">
+                <!-- get the attributes for the bullet styles -->
+                <xsl:variable name="nextListType">
+                    <xsl:call-template name="getListType">
+                        <xsl:with-param name="nextItem"
+                                        select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$indent]][1]"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <xsl:variable name="nextElTypeAttr">
+                    <xsl:call-template name="getElTypeAttr">
+                        <xsl:with-param name="listType" select="$nextListType"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <!-- build the enclosing element (OL or UL) -->
+                <xsl:element name="{$elName}">
+                    <xsl:attribute name="type">
+                        <xsl:value-of select="$nextElTypeAttr"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="wtype">
+                        <xsl:value-of select="$nextListType"/>
+                    </xsl:attribute>
+                    <xsl:apply-templates select="following-sibling::*[1][self::w:p[w:pPr/w:ind/@w:left>$indent]]"
+                                         mode="ordered-list"/>
+                </xsl:element>
+                <xsl:apply-templates select="
+                  following-sibling::*
+                    [self::w:p[w:pPr/w:ind/@w:left!=$indent]]
+                    [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
+                    [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
+                    [1]
+                  " mode="ordered-list"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="
+                  following-sibling::*[1]
+                    [self::w:p[w:pPr/w:numPr]]
+                    [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
+                    [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
+                  " mode="ordered-list"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="getElTypeAttr">
+        <xsl:param name="listType"/>
+        <xsl:choose>
+            <xsl:when test="$listType = 'upperRoman'">I</xsl:when>
+            <xsl:when test="$listType = 'lowerRoman'">i</xsl:when>
+            <xsl:when test="$listType = 'upperLetter'">A</xsl:when>
+            <xsl:when test="$listType = 'lowerLetter'">a</xsl:when>
+            <xsl:when test="$listType = 'decimal'">1</xsl:when>
+            <xsl:when test="$listType = 'bullet'">0</xsl:when>
+            <xsl:otherwise>1</xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="getListType">
+        <xsl:param name="nextItem"/>
+        <xsl:variable name="nextNumId" select="$nextItem/w:pPr/w:numPr/w:numId/@w:val"/>
+        <xsl:variable name="nextLevel" select="$nextItem/w:pPr/w:numPr/w:ilvl/@w:val"/>
+        <xsl:value-of
+                select="/w:document/w:numbering/w:abstractNum[@w:abstractNumId=$nextNumId]/w:lvl[@w:ilvl=$nextLevel]/w:numFmt/@w:val"/>
+    </xsl:template>
+    <!-- End Lists -->
+
+    <!-- images -->
     <xsl:template match="w:drawing">
-        <xsl:apply-templates select=".//a:blip" />
+        <xsl:apply-templates select=".//a:blip"/>
     </xsl:template>
     <xsl:template match="a:blip">
-        <xsl:variable name="id" select="@r:embed" />
-        <i:image>
+        <xsl:variable name="id" select="@r:embed"/><img>
             <xsl:attribute name="src">
-                <xsl:value-of select="/w:document/data/@word-folder" />
-                <xsl:value-of select="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@Target" />
+                <xsl:value-of select="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@Target"/>
             </xsl:attribute>
             <xsl:attribute name="width">
-                <xsl:value-of select="round(ancestor::w:drawing[1]//wp:extent/@cx div 9525)" />
+                <xsl:value-of select="round( ancestor::w:drawing[1]//wp:extent/@cx div 9525 )"/>
             </xsl:attribute>
             <xsl:attribute name="height">
-                <xsl:value-of select="round(ancestor::w:drawing[1]//wp:extent/@cy div 9525)" />
+                <xsl:value-of select="round( ancestor::w:drawing[1]//wp:extent/@cy div 9525 )"/>
             </xsl:attribute>
-        </i:image>
+        </img></xsl:template>
+
+    <!-- Links -->
+    <xsl:template match="w:hyperlink"><xsl:variable name="id" select="@r:id"/><a><xsl:attribute name="href">
+                <xsl:value-of select="/w:document/rels:Relationships/rels:Relationship[@Id=$id]/@Target"/>
+            </xsl:attribute><xsl:apply-templates/></a></xsl:template>
+
+    <!-- tables -->
+    <xsl:template match="w:tbl">
+        <item type="table" heading="false" style="table">
+            <content>
+                <table>
+                    <xsl:apply-templates/>
+                </table>
+            </content>
+        </item>
+    </xsl:template>
+    <xsl:template match="w:tr">
+        <tr>
+            <xsl:apply-templates/>
+        </tr>
+    </xsl:template>
+    <xsl:template match="w:tc">
+        <td>
+            <xsl:value-of select="."/>
+        </td>
     </xsl:template>
 
-    <!-- Edit: Inserted text -->
-    <xsl:template match="w:ins">
-        <xsl:apply-templates />
-    </xsl:template>
+    <!-- skip contents of these fields -->
+    <xsl:template match="rels:Relationships"/>
+    <xsl:template match="text()"/>
 
-    <!-- Edit: Deleted text -->
-    <xsl:template match="w:del" />
 </xsl:stylesheet>
