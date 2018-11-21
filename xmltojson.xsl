@@ -10,7 +10,8 @@
                 xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
                 xmlns:dc="http://purl.org/dc/elements/1.1/"
                 xmlns:dcterms="http://purl.org/dc/terms/"
-                >
+                xmlns:f="urn:docx2json:intermediary"
+                exclude-result-prefixes="w r rels a wp cp dc dcterms f">
 
     <xsl:output method="xml" indent="yes"
                 encoding="UTF-8"
@@ -74,8 +75,10 @@
     <!-- <xsl:template match="item[@content='']">
     </xsl:template> -->
 
-    <xsl:template match="i">&lt;i&gt;<xsl:apply-templates/>&lt;/i&gt;</xsl:template>
-    <xsl:template match="b">&lt;b&gt;<xsl:apply-templates/>&lt;/b&gt;</xsl:template>
+    <xsl:template match="f:bold"><b><xsl:apply-templates/></b></xsl:template>
+    <xsl:template match="f:italic"><i><xsl:apply-templates/></i></xsl:template>
+    <!-- <xsl:template match="f:strikethrough">&lt;f:s&gt;<xsl:apply-templates/>&lt;/f:s&gt;</xsl:template> -->
+    <!-- <xsl:template match="f:line">&lt;f:l&gt;<xsl:apply-templates/>&lt;/f:l&gt;</xsl:template> -->
 
     <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template>
 

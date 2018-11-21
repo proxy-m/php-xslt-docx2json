@@ -103,6 +103,38 @@
             return [$xsl, $xmldoc];
         }
 
+        static function beautifyOutputXmlData(string $outputXmlData): string {
+            $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'f:line');
+            foreach ($formattingTags as $tag) {
+				// Convert parallel repeated tags to single instance
+				// e.g. `<i:x>foo</i:x><i:x>bar</i:x>` to `<i:x>foo bar</i:x>`
+				$outputXmlData = preg_replace("/(<\/{$tag}>)[ ]*<{$tag}>/", ' ', $outputXmlData);
+
+				// Remove any number of spaces that follow the opening tag
+				$outputXmlData = preg_replace("/(<{$tag}[^>]*>)[ ]*/", ' \\1', $outputXmlData);
+
+				// Remove multiple spaces before closing tags
+				$outputXmlData = preg_replace("/[ ]*<\/{$tag}>/", "</{$tag}>", $outputXmlData);
+			}
+            
+            // Remove leading whitespace before closing tags
+            $outputXmlData = preg_replace('/\s*(\<\/)/m', '$1', $outputXmlData);
+
+            // Remove whitespace between tags
+            $outputXmlData = preg_replace('/(\>)\s*(\<)/m', '$1$2', $outputXmlData);
+            return $outputXmlData;
+        }
+
+        static function remove_empty_tags_from_dom_document($doc) { // Remove empty tags
+			$xpath = new DOMXPath($doc);
+			while (($nodes = $xpath->query('//*[not(*) and not(\'i:image\') and not(text()[normalize-space()])]')) && ($nodes->length)) {
+				foreach ($nodes as $node) {
+					$node->parentNode->removeChild($node);
+				}
+            }
+            return $doc;
+        }
+
         static function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename) { 
             $xsl_result = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
             if (!$xsl_result || count($xsl_result)!==2) {
@@ -111,11 +143,15 @@
             $xsl = $xsl_result[0];
             $xmldoc = $xsl_result[1];
             $outputXmlData = $xsl->transformToXml($xmldoc);
-            
+
+            $outputXmlData = self::beautifyOutputXmlData($outputXmlData);
             $result = new DOMDocument("1.0");
             $result->preserveWhiteSpace = false;
             $result->formatOutput = true;
             $result->loadXML($outputXmlData);
+
+            self::remove_empty_tags_from_dom_document($result);
+
             $result->encoding = "UTF-8";
             $good = $result->save($to_filename);
             return ($good === FALSE) ? FALSE : $to_filename;
@@ -131,7 +167,7 @@
             $intermediaryDocument = $xsl->transformToDoc($xmldoc);
 
             $xml = $intermediaryDocument->saveXML();
-            $displayTags = array('content', 'b', 'i', );
+            ///$displayTags = array('content', 'b', 'i', );
             
             // $result = new DOMDocument("1.0");
             // $result->preserveWhiteSpace = false;
@@ -169,16 +205,16 @@
         }
 
         public function transform_to_xml($forced_source_xml, $output_xml_filename) {            
-            if (!$output_xml_filename) {
-                $output_xml_filename = './output/output.xml';
-            }
-            self::force_crate_parent_dir($output_xml_filename);
             if (!$forced_source_xml) {
                 $forced_source_xml = $this->extract_word_entry_from_docx();
                 if (!$forced_source_xml) {
                     return FALSE;
                 }
             }
+            if (!$output_xml_filename) {
+                $output_xml_filename = './output/' . basename($forced_source_xml[0]) . "_out.xml"; ///'./output/output.xml';
+            }
+            self::force_crate_parent_dir($output_xml_filename);
             $this->output_xml_filename = self::transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename);
             return $this->output_xml_filename;
         }
@@ -188,9 +224,9 @@
             return $this->transform_with_xslt_to_json([$output_xml_filename], $this->xslt_transformation_2_to_json, $output_json_filename);
         }
 
-        public function transform_to_json($output_json_filename) {
+        public function transform_to_json($output_xml_filename, $output_json_filename) {
             if (!$this->output_xml_filename) {
-                $this->output_xml_filename = $this->transform_to_xml(null, null);
+                $this->output_xml_filename = $this->transform_to_xml(null, $output_xml_filename);
                 if (!$this->output_xml_filename) {
                     return FALSE;
                 }
@@ -212,7 +248,8 @@
     }
 
     $docxToJson = new DocxToJson('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/xmltojson.xsl', '/home/proxym/php-xslt-docx2json/outut/output.json'/*TODO*/);
-    $outputXml = $docxToJson->transform_to_json(null, '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml');
+    ///$outputXml = $docxToJson->transform_to_xml(null, '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml');
+    $outputXml = $docxToJson->transform_to_json('/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml');
     echo $outputXml;
 
     echo PHP_EOL;

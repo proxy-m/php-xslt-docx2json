@@ -11,6 +11,7 @@
                 xmlns:dc="http://purl.org/dc/elements/1.1/"
                 xmlns:dcterms="http://purl.org/dc/terms/"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:f="urn:docx2json:intermediary"
                 exclude-result-prefixes="w r rels a wp cp dc dcterms mc">
 
     <xsl:output method="xml"
@@ -153,10 +154,10 @@
 
     <xsl:template match="w:r">
         <xsl:choose>
-            <xsl:when test="w:rPr/w:b[not(@w:val)]"><b><xsl:apply-templates/></b></xsl:when>
-            <xsl:when test="w:rPr/w:b[@w:val='true']"><b><xsl:apply-templates/></b></xsl:when>
-            <xsl:when test="w:rPr/w:i[not(@w:val)]"><xsl:apply-templates/></xsl:when>
-            <xsl:when test="w:rPr/w:i[@w:val='true']"><xsl:apply-templates/></xsl:when>
+            <xsl:when test="w:rPr/w:b[not(@w:val)]"><f:bold><xsl:apply-templates/></f:bold></xsl:when>
+            <xsl:when test="w:rPr/w:b[@w:val='true']"><f:bold><xsl:apply-templates/></f:bold></xsl:when>
+            <xsl:when test="w:rPr/w:i[not(@w:val)]"><f:italic><xsl:apply-templates/></f:italic></xsl:when>
+            <xsl:when test="w:rPr/w:i[@w:val='true']"><f:italic><xsl:apply-templates/></f:italic></xsl:when>
             <xsl:when test="w:rPr/w:highlight"><span style="background-color:{w:rPr/w:highlight/@w:val}"><xsl:apply-templates/></span></xsl:when>
             <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
         </xsl:choose>
