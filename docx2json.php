@@ -100,7 +100,8 @@
 
             $xsl = new XSLTProcessor();
             $xsl->importStyleSheet($xsldoc);
-            return [$xsl, $xmldoc];
+            $outputXmlData = $xsl->transformToXml($xmldoc);
+            return $outputXmlData;
         }
 
         static function beautifyOutputXmlData(string $outputXmlData): string {
@@ -136,13 +137,10 @@
         }
 
         static function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename) { 
-            $xsl_result = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
-            if (!$xsl_result || count($xsl_result)!==2) {
+            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
+            if (!$outputXmlData) {
                 return FALSE;
             }
-            $xsl = $xsl_result[0];
-            $xmldoc = $xsl_result[1];
-            $outputXmlData = $xsl->transformToXml($xmldoc);
 
             $outputXmlData = self::beautifyOutputXmlData($outputXmlData);
             $result = new DOMDocument("1.0");
@@ -158,15 +156,12 @@
         }
 
         static function transform_with_xslt_to_json(array $from_xml_filename, string $by_xsl_style, string $to_filename) { 
-            $xsl_result = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
-            if (!$xsl_result || count($xsl_result)!==2) {
+            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style);
+            if (!$outputXmlData) {
                 return FALSE;
             }
-            $xsl = $xsl_result[0];
-            $xmldoc = $xsl_result[1];
-            $intermediaryDocument = $xsl->transformToDoc($xmldoc);
 
-            $xml = $intermediaryDocument->saveXML();
+            ///$xml = $intermediaryDocument->saveXML();
             ///$displayTags = array('content', 'b', 'i', );
             
             // $result = new DOMDocument("1.0");
@@ -174,8 +169,8 @@
             // $result->formatOutput = true;
             // $result->loadXML($outputXmlData);
             // $result->encoding = "UTF-8";
-            $good = $intermediaryDocument->save($to_filename);
-            ///$good = file_put_contents($to_filename, $intermediaryDocument)!==FALSE;
+            ///$good = $intermediaryDocument->save($to_filename);
+            $good = file_put_contents($to_filename, $outputXmlData)!==FALSE;
             return ($good === FALSE) ? FALSE : $to_filename;
         }
 

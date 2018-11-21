@@ -174,9 +174,7 @@
                 type='heading'
                 style="{w:pPr/w:pStyle/@w:val}"
                 size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
-            <content>
-                <xsl:apply-templates/>
-            </content>
+            <content><xsl:apply-templates/></content>
         </item>
     </xsl:template>
 
