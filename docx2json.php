@@ -34,14 +34,10 @@
             $this->xslt_transformation_to_xml = $xslt_transformation_to_xml;
         }
 
-        
-
-        
-
         /**
          * $from_xml_filename[0] must be root xml document.
          */
-        static function transform_with_xslt(array $from_xml_filename, string $by_xsl_style, $source_docx_filename) { 
+        protected final function transform_with_xslt(array $from_xml_filename, string $by_xsl_style, $source_docx_filename) { 
             if (!$from_xml_filename || count($from_xml_filename)==0) {
                 return FALSE;
             }
@@ -71,7 +67,7 @@
             return $outputXmlData;
         }
 
-        static function beautifyOutputXmlData(string $outputXmlData): string {
+        protected function beautifyOutputXmlData(string $outputXmlData): string {
             $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'f:line');
             foreach ($formattingTags as $tag) {
 				// Convert parallel repeated tags to single instance
@@ -97,7 +93,7 @@
             return $outputXmlData;
         }
 
-        static function remove_empty_tags_from_dom_document($doc) { // Remove empty tags
+        protected function remove_empty_tags_from_dom_document($doc) { // Remove empty tags
 			$xpath = new DOMXPath($doc);
 			while (($nodes = $xpath->query('//*[not(*) and not(\'i:image\') and not(text()[normalize-space()])]')) && ($nodes->length)) {
 				foreach ($nodes as $node) {
@@ -107,50 +103,28 @@
             return $doc;
         }
 
-        static function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
-            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
+        protected function transform_with_xslt_to_xml(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
+            $outputXmlData = $this->transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
             if (!$outputXmlData) {
                 return FALSE;
             }
 
-            $outputXmlData = self::beautifyOutputXmlData($outputXmlData);
+            $outputXmlData = $this->beautifyOutputXmlData($outputXmlData);
             $result = new DOMDocument("1.0");
             $result->preserveWhiteSpace = false;
             $result->formatOutput = true;
             $result->loadXML($outputXmlData);
 
-            self::remove_empty_tags_from_dom_document($result);
+            $this->remove_empty_tags_from_dom_document($result);
 
             $result->encoding = "UTF-8";
             $good = $result->save($to_filename);
             return ($good === FALSE) ? FALSE : $to_filename;
         }
 
-        static function transform_with_xslt_to_json(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
-            $outputXmlData = self::transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
-            if (!$outputXmlData) {
-                return FALSE;
-            }
-
-            ///$xml = $intermediaryDocument->saveXML();
-            ///$displayTags = array('content', 'b', 'i', );
-            
-            // $result = new DOMDocument("1.0");
-            // $result->preserveWhiteSpace = false;
-            // $result->formatOutput = true;
-            // $result->loadXML($outputXmlData);
-            // $result->encoding = "UTF-8";
-            ///$good = $intermediaryDocument->save($to_filename);
-            $good = file_put_contents($to_filename, $outputXmlData)!==FALSE;
-            return ($good === FALSE) ? FALSE : $to_filename;
-        }
-
-        
-
-
         protected function transform_to_xml(array $forced_source_xml, string $output_xml_filename) {            
             force_crate_parent_dir($output_xml_filename);
-            $this->output_xml_filename = self::transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename, $this->source_docx_filename);
+            $this->output_xml_filename = $this->transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename, $this->source_docx_filename);
             return $this->output_xml_filename;
         }
 
@@ -163,27 +137,6 @@
             }
             return $this->transform_to_xml($forced_source_xml, $output_xml_filename);
         }
-
-        
-
-        // protected function transform_xml_to_json(string $output_xml_filename, string $output_json_filename) {
-        //     force_crate_parent_dir($output_json_filename);
-        //     return $this->transform_with_xslt_to_json([$output_xml_filename], $this->xslt_transformation_2_to_json, $output_json_filename, $this->source_docx_filename);
-        // }
-
-        // public function transform_to_json($output_xml_filename, $output_json_filename) {
-        //     if (!$this->output_xml_filename) {
-        //         $this->output_xml_filename = $this->transform_to_xml(null, $output_xml_filename);
-        //         if (!$this->output_xml_filename) {
-        //             return FALSE;
-        //         }
-        //     }
-        //     if (!$output_json_filename) {
-        //         $output_json_filename = './output/output.json';
-        //     }
-        //     $this->output_json_filename = $output_json_filename;
-        //     return $this->transform_xml_to_json($this->output_xml_filename, $this->output_json_filename);
-        // }
 
         public function get_output_xml_filename() {
             return $this->output_xml_filename;
@@ -207,7 +160,7 @@
 /**
          * $entry_names[0] must be root xml document entry.
          */
-        static function extract_entries_from_zip(string $source_zip_filename, array $entry_names, string $output_dirname) {            
+        protected final function extract_entries_from_zip(string $source_zip_filename, array $entry_names, string $output_dirname) {            
             $content = "";
             $output_dirname .= (endsWith($output_dirname, "/")? "" : "/");
             $main_entry_name = (count($entry_names)>0) ? $entry_names[0] : null;
@@ -259,7 +212,7 @@
                 $source_extracted_xml_dir = $this->source_docx_filename . "_dir";
                 force_crate_parent_dir($source_extracted_xml_dir);
                 $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml", "docProps/app.xml", "docProps/core.xml"];
-                $this->source_extracted_xml = self::extract_entries_from_zip($this->source_docx_filename, $entry_names, $source_extracted_xml_dir);            
+                $this->source_extracted_xml = $this->extract_entries_from_zip($this->source_docx_filename, $entry_names, $source_extracted_xml_dir);            
             }
             return $this->source_extracted_xml;
         }
@@ -328,15 +281,64 @@
         }
     }
 
+    class XmlToJson extends XmlToXml {
+        protected $xslt_transformation_to_json;
+        protected $source_xml_filenames;
+        protected $output_json_filename;
+
+        public function __construct(array $source_xml_filenames, string $xslt_transformation_to_json, string $output_json_filename) {
+            $this->source_xml_filenames = $source_xml_filenames;
+            $this->output_json_filename = $output_json_filename;
+            $this->xslt_transformation_to_json = $xslt_transformation_to_json;
+        }
+
+        protected function transform_with_xslt_to_json(array $from_xml_filename, string $by_xsl_style, string $to_filename, $source_docx_filename) { 
+            $outputXmlData = $this->transform_with_xslt($from_xml_filename, $by_xsl_style, $source_docx_filename);
+            if (!$outputXmlData) {
+                return FALSE;
+            }
+
+            $good = file_put_contents($to_filename, $outputXmlData)!==FALSE;
+            return ($good === FALSE) ? FALSE : $to_filename;
+        }
+
+        protected function transform_xml_to_json(array $source_xml_filenames, string $output_json_filename, $source_docx_filename) {
+            force_crate_parent_dir($output_json_filename);
+            return $this->transform_with_xslt_to_json($source_xml_filenames, $this->xslt_transformation_to_json, $output_json_filename, $source_docx_filename);
+        }
+
+        public function transform_to_json() {
+            $source_docx_filename = null;
+            return $this->transform_xml_to_json($this->source_xml_filenames, $this->output_json_filename, $source_docx_filename);
+        }
+
+        public function get_output_json_filename() {
+            return $this->output_json_filename;
+        }
+    }
+
     ///$docxToJson = new DocxToJson('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/xmltojson.xsl', '/home/proxym/php-xslt-docx2json/outut/output.json'/*TODO*/);
     ///$docxToJson = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/xmltojson_scripture_old.xsl', '/home/proxym/php-xslt-docx2json/outut/output.json'/*TODO*/);
-    ///$docxToJson = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml'/*TODO*/);
-    ///$outputXml = $docxToJson->transform_to_xml_1();
-    $docxToJson = new DocxToXmlScripture('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.xml'/*TODO*/);  
-    $outputXml = $docxToJson->transform_to_xml_scripture();
+    $docxToxml = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml'/*TODO*/);
+    $outputXml = $docxToxml->transform_to_xml_1();
+    if ($outputXml === FALSE) {
+        echo "ERROR 1" . PHP_EOL;
+        exit(1);
+    }
+
+    $docxToXmlScripture = new DocxToXmlScripture('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.xml'/*TODO*/);  
+    $outputXmlScripture = $docxToXmlScripture->transform_to_xml_scripture();
     /////$outputXml = $docxToJson->transform_to_json('/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml', null);
     if ($outputXml === FALSE) {
-        echo "ERROR" . PHP_EOL;
+        echo "ERROR 2" . PHP_EOL;
+        exit(1);
+    }
+
+    $xmlToJson = new XmlToJson([$outputXml], '/home/proxym/php-xslt-docx2json/xmltojson_scripture_old.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture_old.json'/*TODO*/);  
+    $outputJson = $xmlToJson->transform_to_json();
+    if ($outputJson === FALSE) {
+        echo "ERROR 3" . PHP_EOL;
+        exit(1);
     }
 
     echo PHP_EOL;
