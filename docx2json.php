@@ -156,8 +156,12 @@
         protected $output_xml_filename_1;
         protected $output_xml_scripture_filename;
         protected $output_json_filename;
+
+        public function get_source_docx_filename() {
+            return $this->source_docx_filename;
+        }
       
-/**
+        /**
          * $entry_names[0] must be root xml document entry.
          */
         protected final function extract_entries_from_zip(string $source_zip_filename, array $entry_names, string $output_dirname) {            
@@ -307,9 +311,13 @@
             return $this->transform_with_xslt_to_json($source_xml_filenames, $this->xslt_transformation_to_json, $output_json_filename, $source_docx_filename);
         }
 
-        public function transform_to_json() {
-            $source_docx_filename = null;
+        public function transform_to_json($optional_source_docx_filename) {
+            $source_docx_filename = $optional_source_docx_filename;
             return $this->transform_xml_to_json($this->source_xml_filenames, $this->output_json_filename, $source_docx_filename);
+        }
+
+        public function get_source_xml_filenames() {
+            return $this->source_xml_filenames;
         }
 
         public function get_output_json_filename() {
@@ -317,29 +325,60 @@
         }
     }
 
+    class DocxToJsonScripture extends DocxToXmlScripture {
+        protected $xmlToJson;
+        protected $outputXmlScripture;
+        
+        public function __construct(string $source_docx_filename, string $output_json_filename) {
+            $xslt_transformation_2_to_xml = '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl';
+            $output_xml_scripture_filename = '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.xml';
+            parent::__construct($source_docx_filename, $xslt_transformation_2_to_xml, $output_xml_scripture_filename);
+            $this->output_json_filename = $output_json_filename;
+            $this->outputXmlScripture = $this->transform_to_xml_scripture();
+            if (!$this->outputXmlScripture) {
+                return FALSE;
+            }
+            $xslt_transformation_3_to_json = '/home/proxym/php-xslt-docx2json/xml_scripture_to_json.xsl';
+            $this->xmlToJson = new XmlToJson([$this->outputXmlScripture], $xslt_transformation_3_to_json, $output_json_filename);
+        }
+
+        public function transform_to_json_scripture() {
+            $source_docx_filename = $this->get_source_docx_filename();
+            return $this->xmlToJson->transform_to_json($source_docx_filename);
+        }
+    }
+
     ///$docxToJson = new DocxToJson('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/xmltojson.xsl', '/home/proxym/php-xslt-docx2json/outut/output.json'/*TODO*/);
     ///$docxToJson = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/xmltojson_scripture_old.xsl', '/home/proxym/php-xslt-docx2json/outut/output.json'/*TODO*/);
-    $docxToxml = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml'/*TODO*/);
-    $outputXml = $docxToxml->transform_to_xml_1();
-    if ($outputXml === FALSE) {
-        echo "ERROR 1" . PHP_EOL;
-        exit(1);
-    }
+    // $docxToxml = new DocxToXml('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml'/*TODO*/);
+    // $outputXml = $docxToxml->transform_to_xml_1();
+    // if ($outputXml === FALSE) {
+    //     echo "ERROR 1" . PHP_EOL;
+    //     exit(1);
+    // }
 
-    $docxToXmlScripture = new DocxToXmlScripture('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.xml'/*TODO*/);  
-    $outputXmlScripture = $docxToXmlScripture->transform_to_xml_scripture();
-    /////$outputXml = $docxToJson->transform_to_json('/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml', null);
-    if ($outputXml === FALSE) {
-        echo "ERROR 2" . PHP_EOL;
-        exit(1);
-    }
+    // $docxToXmlScripture = new DocxToXmlScripture('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/xmltoxml_scripture.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.xml'/*TODO*/);  
+    // $outputXmlScripture = $docxToXmlScripture->transform_to_xml_scripture();
+    // /////$outputXml = $docxToJson->transform_to_json('/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml', null);
+    // if ($outputXmlScripture === FALSE) {
+    //     echo "ERROR 2" . PHP_EOL;
+    //     exit(1);
+    // }
 
-    $xmlToJson = new XmlToJson([$outputXml], '/home/proxym/php-xslt-docx2json/xmltojson_scripture_old.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture_old.json'/*TODO*/);  
-    $outputJson = $xmlToJson->transform_to_json();
+    // $xmlToJson = new XmlToJson([$outputXml], '/home/proxym/php-xslt-docx2json/xmltojson_scripture_old.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture_old.json'/*TODO*/);  
+    // $outputJson = $xmlToJson->transform_to_json();
+    // if ($outputJson === FALSE) {
+    //     echo "ERROR 3" . PHP_EOL;
+    //     exit(1);
+    // }
+
+    $docxToJsonScripture = new DocxToJsonScripture('/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.json'/*TODO*/);  
+    $outputJson = $docxToJsonScripture->transform_to_json_scripture();
     if ($outputJson === FALSE) {
-        echo "ERROR 3" . PHP_EOL;
+        echo "ERROR 4" . PHP_EOL;
         exit(1);
     }
+
 
     echo PHP_EOL;
 ?>
