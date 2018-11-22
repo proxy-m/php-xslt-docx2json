@@ -19,12 +19,15 @@
     <xsl:template match="/">{<xsl:variable name="rootNode"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($rootNode, 1, string-length($rootNode) - 1)"/>}</xsl:template>
 
     <!-- document properties .e.g title -->
-    <xsl:template match="head">
-"properties" : {<xsl:apply-templates/>},</xsl:template>
-    <xsl:template match="head/*">"<xsl:value-of select="local-name()"/>": "<xsl:value-of select="."/>"<xsl:if test="position() != last()">,</xsl:if></xsl:template>
+    <xsl:template match="head"><xsl:apply-templates/></xsl:template>
+    <xsl:template match="head/*">
+        <xsl:variable name="headerParamName"><xsl:value-of select="local-name()"/></xsl:variable>
+        <xsl:if test="$headerParamName = 'sourceDocxFileName'">"file": "<xsl:value-of select="."/>",</xsl:if>
+    </xsl:template>
 
     <xsl:template match="body">
-"data" : [<xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($itemsList, 1, string-length($itemsList) - 1)"/>],</xsl:template>
+<xsl:variable name="valueOfDate0">0(00) 00000, 0000000</xsl:variable>
+"data" : [{"day" : "<xsl:value-of select="$valueOfDate0"/>", "scripture" : "<xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($itemsList, 1, string-length($itemsList) - 1)"/>"}],</xsl:template>
     <!-- <xsl:template match="body">"items" : [<xsl:apply-templates/>],</xsl:template> -->
     <xsl:template match="toc">
 {
@@ -36,12 +39,18 @@
         <xsl:variable name="valueOfContent"><xsl:apply-templates select="./content"/></xsl:variable> <!-- it slowing -->
         <xsl:choose>
             <xsl:when test="$valueOfContent = ''"></xsl:when>
+            <!-- <xsl:when test="$valueOfContent = ''"></xsl:when> -->
             <xsl:otherwise>
-{
-    <!-- "type" : "<xsl:value-of select="@type"/>", -->
-    <!-- "style" : "<xsl:value-of select="@style"/>", -->
-    "content" : "<xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/>" 
-},</xsl:otherwise>
+
+            <xsl:variable name="valueOfContent0" select="translate($valueOfContent, '()123456789', '00000000000')"/>
+            <xsl:variable name="valueOfContentZ" select="substring-before($valueOfContent0, ' ')"/>
+            
+            <xsl:choose>
+                <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000'">
+                    <xsl:variable name="valueOfDate"><xsl:value-of select="$valueOfContent"/>
+</xsl:variable>"},
+    {"day" : "<xsl:value-of select="$valueOfDate"/>", "scripture" : "</xsl:when>
+<xsl:otherwise><xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise></xsl:choose></xsl:otherwise>
     </xsl:choose></xsl:template>
     <!-- <xsl:variable name="style">Footnote</xsl:variable> -->
 
