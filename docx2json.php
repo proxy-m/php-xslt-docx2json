@@ -455,7 +455,7 @@
     //     exit(1);
     // }
 
-    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, $source_calendar_filename, '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.json', $calendar_year);  
+    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, $source_calendar_filename, './output/calendar_2019.json', $calendar_year);  
     $outputJson = $docxToJsonScripture->transform_to_json_scripture();
     if ($outputJson === FALSE) {
         echo "ERROR 3" . PHP_EOL;
