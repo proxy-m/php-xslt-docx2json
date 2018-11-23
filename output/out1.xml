@@ -5,11 +5,11 @@
     <creator>Ш</creator>
     <description/>
     <language>en-US</language>
-    <modified>2018-11-23T09:30:00Z</modified>
+    <modified>2018-04-02T14:28:00Z</modified>
     <subject/>
     <title>Православный календарь на 2019 год</title>
-    <sourceXmlFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
-    <sourceDocxFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx</sourceDocxFileName>
+    <sourceXmlFileName>./input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
+    <sourceDocxFileName>https://www.rop.ru/d/3000/d/calendar_2019_0.doc</sourceDocxFileName>
     <sourceCalendarYear>2019</sourceCalendarYear>
   </head>
   <body>
@@ -7037,7 +7037,7 @@
       <content>5(18) октября, пятница</content>
     </item>
     <item type="section" id="" style="Normal" size="24">
-      <content>Мц. Харитины (304).  <f:bold>Свтт. Московских Петра, Феогноста, Алексия, Киприана, Фотия, Ионы, Геронтия, Иоасафа, Макария, Филиппа, Иова, Ермогена, Тихона, Петра, Филарета, Иннокентия и Макария <footnoteReference refId="122"/> .</f:bold></content>
+      <content>Мц. Харитины (304).  <f:bold>Свтт. Московских Петра, Феогноста, Алексия, Киприана, Фотия, Ионы, Геронтия, Иоасафа, Макария, Филиппа, Иова, Ермогена, Тихона, Петра, Филарета, Иннокентия и Макария</f:bold><footnoteReference refId="122"/><f:bold>.</f:bold></content>
     </item>
     <item type="section" id="" style="Normal" size="24">
       <content>Прпп. Дамиана пресвитера, целебника (1071), Иеремии (ок. 1070) и Матфея (ок. 1085) прозорливых, Печерских, в Ближних пещерах. Прп. Харитины, кн. Литовской, в Новгороде подвизавшейся (1281). Сщмч. Дионисия, еп. Александрийского (264–265). Мц. Мамелхвы Персидской (ок. 344). Прп. Григория Хандзтийского (861) (Груз.).</content>
@@ -9089,7 +9089,9 @@
       </content>
     </item>
     <item type="section" id="" style="Normal" size="24">
-      <content/>
+      <content>
+        <f:italic/>
+      </content>
     </item>
     <item type="section" id="" style="Footer" size="">
       <content>
@@ -9102,7 +9104,7 @@
     <creator>Ш</creator>
     <description/>
     <language>en-US</language>
-    <modified>2018-11-23T09:30:00Z</modified>
+    <modified>2018-04-02T14:28:00Z</modified>
     <subject/>
     <title>Православный календарь на 2019 год</title>
     <item type="section" id="0" style="" size="">

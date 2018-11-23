@@ -17,7 +17,7 @@
         return $diff >= 0 && strpos($haystack, $needle, $diff) !== false;
     }
 
-    function force_crate_parent_dir(string $full_file_name) {
+    function force_create_parent_dir(string $full_file_name) {
         $output_dir = dirname($full_file_name);
         echo "dir: $output_dir" . PHP_EOL;
         return mkdir($output_dir, 0777, true);
@@ -30,6 +30,20 @@
             return $matches[0];
         }
         return "0000";
+    }
+
+    function get_file_by_url(string $url) {
+        if (startsWith($url, '/') || startsWith($url, '.')) {
+            return file_get_contents($url);
+        } else {
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HEADER, false);
+            $data = curl_exec($curl);
+            curl_close($curl);
+            return $data;
+        }
     }
 
     class XmlToXml {
@@ -137,7 +151,7 @@
         }
 
         protected function transform_to_xml(array $forced_source_xml, string $output_xml_filename) {            
-            force_crate_parent_dir($output_xml_filename);
+            force_create_parent_dir($output_xml_filename);
             $this->output_xml_filename = $this->transform_with_xslt_to_xml($forced_source_xml, $this->xslt_transformation_1_to_xml, $output_xml_filename, $this->source_docx_filename);
             return $this->output_xml_filename;
         }
@@ -217,7 +231,7 @@
                         array_push($result, $output_filename);
                     }
                 }
-                force_crate_parent_dir($output_filename);
+                force_create_parent_dir($output_filename);
                 $good = file_put_contents($output_filename, $content)!==FALSE && $good;
                 zip_entry_close($zip_entry);
             }
@@ -227,10 +241,30 @@
 
         protected function extract_word_entry_from_docx() {
             if (!$this->source_extracted_xml) {
-                $source_extracted_xml_dir = $this->source_docx_filename . "_dir";
-                force_crate_parent_dir($source_extracted_xml_dir);
+                $source_docx_data = get_file_by_url($this->source_docx_filename);
+                if (!$source_docx_data) {
+                    return FALSE;
+                }
+                $source_dir = "./input";
+                $source_docx_tmp = $source_dir . "/" . basename($this->source_docx_filename);
+                force_create_parent_dir($source_docx_tmp);
+                $good = file_put_contents($source_docx_tmp, $source_docx_data)!==FALSE;
+                if (!$good) {
+                    return FALSE;
+                }
+                $ext = pathinfo($source_docx_tmp, PATHINFO_EXTENSION);
+                if ($ext != "docx") {
+                    echo "NOT docx file on input `{$source_docx_tmp}`, so try to convert with libreofflice ... " . PHP_EOL;
+                    $sourceFile = $source_docx_tmp;
+                    $outputDirectory = dirname($sourceFile);                    
+                    exec("/usr/bin/libreoffice --headless --convert-to docx {$sourceFile} --outdir {$outputDirectory}"); ///
+                    $source_docx_tmp = $outputDirectory . '/' . pathinfo($source_docx_tmp, PATHINFO_FILENAME) . ".docx";
+                    echo "new docx filename: `{$source_docx_tmp}`" . PHP_EOL;
+                }
+                $source_extracted_xml_dir = $source_docx_tmp . "_dir";
+                force_create_parent_dir($source_extracted_xml_dir);
                 $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml", "docProps/app.xml", "docProps/core.xml"];
-                $this->source_extracted_xml = $this->extract_entries_from_zip($this->source_docx_filename, $entry_names, $source_extracted_xml_dir);            
+                $this->source_extracted_xml = $this->extract_entries_from_zip($source_docx_tmp, $entry_names, $source_extracted_xml_dir);            
             }
             return $this->source_extracted_xml;
         }
@@ -238,12 +272,12 @@
         public function __construct(string $calendar_year, string $source_docx_filename, string $xslt_transformation_1_to_xml, string $output_xml_filename_1/*, $xslt_transformation_2_to_xml , $xslt_transformation_3_to_json, string $output_json_filename*/) {
             $this->source_extracted_xml = null;
             $this->source_docx_filename = $source_docx_filename;
-            if (!$forced_source_xmls) {
+            ///if (!$forced_source_xmls) {
                 $forced_source_xmls = $this->extract_word_entry_from_docx();
                 if (!$forced_source_xmls) {
                     return FALSE;
                 }
-            }
+            ///}
             
             parent::__construct($calendar_year, $forced_source_xmls, $xslt_transformation_1_to_xml, $output_xml_filename_1);
 
@@ -287,7 +321,7 @@
         }
 
         protected function transform_xml_to_xml_scripture(array $output_xml_filename, string $output_xml_scripture_filename) {
-            force_crate_parent_dir($output_xml_scripture_filename);
+            force_create_parent_dir($output_xml_scripture_filename);
             return $this->transform_with_xslt_to_xml($output_xml_filename, $this->xslt_transformation_2_to_xml, $output_xml_scripture_filename, $this->source_docx_filename);
         }
 
@@ -322,7 +356,7 @@
         }
 
         protected function transform_xml_to_json(array $source_xml_filenames, string $output_json_filename, $source_docx_filename) {
-            force_crate_parent_dir($output_json_filename);
+            force_create_parent_dir($output_json_filename);
             return $this->transform_with_xslt_to_json($source_xml_filenames, $this->xslt_transformation_to_json, $output_json_filename, $source_docx_filename);
         }
 
@@ -365,7 +399,8 @@
         }
     }
 
-    $source_calendar_filename = '/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx';
+    ///$source_calendar_filename = '/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx';
+    $source_calendar_filename = 'https://www.rop.ru/d/3000/d/calendar_2019_0.doc';
     $calendar_year = get_calendar_year($source_calendar_filename);
 
     echo $calendar_year . PHP_EOL;
@@ -394,7 +429,7 @@
     //     exit(1);
     // }
 
-    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, '/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.json', $calendar_year);  
+    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, $source_calendar_filename, '/home/proxym/php-xslt-docx2json/output/calendar_2019_0_scripture.json', $calendar_year);  
     $outputJson = $docxToJsonScripture->transform_to_json_scripture();
     if ($outputJson === FALSE) {
         echo "ERROR 4" . PHP_EOL;
