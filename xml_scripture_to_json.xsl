@@ -27,8 +27,8 @@
 
 
     <xsl:template match="data">
-{"data" : [<xsl:apply-templates/>]
-}</xsl:template>
+"data" : [<xsl:apply-templates/>]
+</xsl:template>
 
     <xsl:template match="item">
             <!-- <xsl:choose> -->
