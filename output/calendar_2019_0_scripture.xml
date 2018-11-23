@@ -9,7 +9,7 @@
     <subject/>
     <title>Православный календарь на 2019 год</title>
     <sourceXmlFileName>./input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
-    <sourceDocxFileName>https://www.rop.ru/d/3000/d/calendar_2019_0.doc</sourceDocxFileName>
+    <sourceDocxFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx</sourceDocxFileName>
     <sourceCalendarYear>2019</sourceCalendarYear>
   </head>
   <data>
