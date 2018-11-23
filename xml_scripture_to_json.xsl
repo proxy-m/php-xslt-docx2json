@@ -61,7 +61,7 @@
     <xsl:otherwise>0</xsl:otherwise>
 </xsl:choose></xsl:variable>
 <xsl:variable name="valueOfDateMM" select="format-number($valueOfDateMSH, '#00')"/><!-- standard 2-digit month format -->
-    {"day" : "<xsl:value-of select="concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD)"/>"<!--, "dayOfWeek": "<xsl:value-of select="$dayOfWeek"/>"-->, "scripture" : "<xsl:apply-templates select='./scripture'/>"}<xsl:if test="position() != last()">,</xsl:if></xsl:otherwise>
+    {"day" : "<xsl:value-of select="concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD)"/>"<!--, "dayOfWeek": "<xsl:value-of select="$dayOfWeek"/>"-->, "scripture" : "<xsl:apply-templates select='./scripture'/>"}<xsl:if test="not(position() = last())">,</xsl:if></xsl:otherwise>
     <!-- </xsl:when> -->
 <!-- <xsl:otherwise><xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise></xsl:choose></xsl:otherwise> -->
         </xsl:choose>
@@ -71,11 +71,9 @@
     <!-- <xsl:template match="f:line">&lt;f:l&gt;<xsl:apply-templates/>&lt;/f:l&gt;</xsl:template> -->
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
-    <!-- <xsl:template match="text()"><zzzz/> -->
-        <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/> -->
-    <!-- </xsl:template> -->
-    <!-- <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_bold != ''"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template> -->
-    <!-- <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_italic != ''"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template> -->
+    <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
+    <xsl:template match="b"><b><xsl:value-of select="."/></b></xsl:template>
+    <xsl:template match="i"><i><xsl:value-of select="."/></i></xsl:template>
 
     <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')" /> -->
 

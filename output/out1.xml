@@ -5,7 +5,7 @@
     <creator>Ш</creator>
     <description/>
     <language>en-US</language>
-    <modified>2018-11-22T00:17:52Z</modified>
+    <modified>2018-11-23T09:30:00Z</modified>
     <subject/>
     <title>Православный календарь на 2019 год</title>
     <sourceXmlFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
@@ -72,7 +72,7 @@
       <content>Свт. Афанасия Полтавского, чудотворца (1801).Мч. Василия Анкирского (ок. 362). Св. Емилии, матери свт. Василия Великого (IV).</content>
     </item>
     <item type="section" id="" style="Normal" size="24">
-      <content>Прмч. Иеремии  <f:italic>Леонова</f:italic> (1918); сщмчч. Платона, еп. Ревельского, и с ним Михаила  <f:italic>Блейве</f:italic> и Николая  <f:italic>Бежаницкого</f:italic> пресвитеров (1919); сщмчч. Александра, архиеп. Самарского, и с ним Иоанна  <f:italic>Смирн " ова</f:italic>, Александра  <f:italic>Иванова</f:italic>, Иоанна  <f:italic>Сульдина</f:italic>, Александра  <f:italic>Органова</f:italic>, Вячеслава  <f:italic>Инфантова</f:italic>, Василия  <f:italic>Витевского</f:italic> и Иакова  <f:italic>Алферова</f:italic> пресвитеров (1938).</content>
+      <content>Прмч. Иеремии  <f:italic>Леонова</f:italic> (1918); сщмчч. Платона, еп. Ревельского, и с ним Михаила  <f:italic>Блейве</f:italic> и Николая  <f:italic>Бежаницкого</f:italic> пресвитеров (1919); сщмчч. Александра, архиеп. Самарского, и с ним Иоанна  <f:italic>Смирнова</f:italic>, Александра  <f:italic>Иванова</f:italic>, Иоанна  <f:italic>Сульдина</f:italic>, Александра  <f:italic>Органова</f:italic>, Вячеслава  <f:italic>Инфантова</f:italic>, Василия  <f:italic>Витевского</f:italic> и Иакова  <f:italic>Алферова</f:italic> пресвитеров (1938).</content>
     </item>
     <item type="section" id="" style="Normal" size="24">
       <content>Литургия св. Василия Великого.</content>
@@ -9102,7 +9102,7 @@
     <creator>Ш</creator>
     <description/>
     <language>en-US</language>
-    <modified>2018-11-22T00:17:52Z</modified>
+    <modified>2018-11-23T09:30:00Z</modified>
     <subject/>
     <title>Православный календарь на 2019 год</title>
     <item type="section" id="0" style="" size="">

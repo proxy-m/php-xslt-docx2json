@@ -21,7 +21,7 @@
     <!-- document properties .e.g title -->
     <xsl:template match="head">
 "properties" : {<xsl:apply-templates/>},</xsl:template>
-    <xsl:template match="head/*">"<xsl:value-of select="local-name()"/>": "<xsl:value-of select="."/>"<xsl:if test="position() != last()">,</xsl:if></xsl:template>
+    <xsl:template match="head/*">"<xsl:value-of select="local-name()"/>": "<xsl:value-of select="."/>"<xsl:if test="not(position() = last())">,</xsl:if></xsl:template>
 
     <xsl:template match="body">
 "data" : [<xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="substring($itemsList, 1, string-length($itemsList) - 1)"/>],</xsl:template>
@@ -58,8 +58,8 @@
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
     <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
-    <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_bold != ''"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
-    <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_italic != ''"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
+    <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_bold = '')"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
+    <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_italic = '')"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
 
     <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')" /> -->
 

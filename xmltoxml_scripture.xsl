@@ -59,8 +59,7 @@
                 
                 <xsl:choose>
                     <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000' or $valueOfContentZ='00000000'">
-<xsl:variable name="valueOfDate"><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:variable>
-&#x3c;/scripture&#x3e;
+<xsl:variable name="valueOfDate"><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:variable>&#x3c;/scripture&#x3e;
     &lt;/item&gt;
     &lt;item&gt;
         &#x3c;day&#x3e;<xsl:value-of select="$valueOfDate"/>&#x3c;/day&#x3e;&#x3c;scripture&#x3e;</xsl:when>
@@ -85,8 +84,8 @@
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
     
     <xsl:template match="text()"><xsl:value-of disable-output-escaping="yes" select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
-    <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_bold != ''"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
-    <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="$f_italic != ''"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
+    <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_bold = '')"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
+    <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_italic = '')"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
 
     <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')" /> -->
 
