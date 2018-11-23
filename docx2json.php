@@ -239,28 +239,33 @@
             return $good === FALSE ? FALSE : $result;
         }
 
+        protected function get_local_docx_path(string $source_document_url) {
+            $source_docx_data = get_file_by_url($source_document_url);
+            if (!$source_docx_data) {
+                return FALSE;
+            }
+            $source_dir = "./input";
+            $source_docx_tmp = $source_dir . "/" . basename($source_document_url);
+            force_create_parent_dir($source_docx_tmp);
+            $good = file_put_contents($source_docx_tmp, $source_docx_data)!==FALSE;
+            if (!$good) {
+                return FALSE;
+            }
+            $ext = pathinfo($source_docx_tmp, PATHINFO_EXTENSION);
+            if ($ext != "docx") {
+                echo "NOT docx file on input `{$source_docx_tmp}`, so try to convert with libreofflice ... " . PHP_EOL;
+                $sourceFile = $source_docx_tmp;
+                $outputDirectory = dirname($sourceFile);                    
+                exec("/usr/bin/libreoffice --headless --convert-to docx {$sourceFile} --outdir {$outputDirectory}"); ///
+                $source_docx_tmp = $outputDirectory . '/' . pathinfo($source_docx_tmp, PATHINFO_FILENAME) . ".docx";
+                echo "new docx filename: `{$source_docx_tmp}`" . PHP_EOL;
+            }
+            return $source_docx_tmp;
+        }
+
         protected function extract_word_entry_from_docx() {
             if (!$this->source_extracted_xml) {
-                $source_docx_data = get_file_by_url($this->source_docx_filename);
-                if (!$source_docx_data) {
-                    return FALSE;
-                }
-                $source_dir = "./input";
-                $source_docx_tmp = $source_dir . "/" . basename($this->source_docx_filename);
-                force_create_parent_dir($source_docx_tmp);
-                $good = file_put_contents($source_docx_tmp, $source_docx_data)!==FALSE;
-                if (!$good) {
-                    return FALSE;
-                }
-                $ext = pathinfo($source_docx_tmp, PATHINFO_EXTENSION);
-                if ($ext != "docx") {
-                    echo "NOT docx file on input `{$source_docx_tmp}`, so try to convert with libreofflice ... " . PHP_EOL;
-                    $sourceFile = $source_docx_tmp;
-                    $outputDirectory = dirname($sourceFile);                    
-                    exec("/usr/bin/libreoffice --headless --convert-to docx {$sourceFile} --outdir {$outputDirectory}"); ///
-                    $source_docx_tmp = $outputDirectory . '/' . pathinfo($source_docx_tmp, PATHINFO_FILENAME) . ".docx";
-                    echo "new docx filename: `{$source_docx_tmp}`" . PHP_EOL;
-                }
+                $source_docx_tmp = $this->get_local_docx_path($this->source_docx_filename);
                 $source_extracted_xml_dir = $source_docx_tmp . "_dir";
                 force_create_parent_dir($source_extracted_xml_dir);
                 $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml", "docProps/app.xml", "docProps/core.xml"];
