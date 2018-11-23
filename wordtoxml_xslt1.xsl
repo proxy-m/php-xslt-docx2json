@@ -25,6 +25,7 @@
                 <xsl:apply-templates select="w:document/cp:coreProperties"/>
                 <sourceXmlFileName><xsl:value-of select="$sourceXmlFileName"/></sourceXmlFileName>
                 <sourceDocxFileName><xsl:value-of select="$sourceDocxFileName"/></sourceDocxFileName>
+                <sourceCalendarYear><xsl:value-of select="$sourceCalendarYear"/></sourceCalendarYear>
             </head>
             <body>
                 <xsl:apply-templates />

@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <doc>
   <head>
+    <created>2018-03-19T17:10:00Z</created>
+    <creator>Ш</creator>
+    <description/>
+    <language>en-US</language>
+    <modified>2018-11-22T00:17:52Z</modified>
+    <subject/>
+    <title>Православный календарь на 2019 год</title>
     <sourceXmlFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
     <sourceDocxFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx</sourceDocxFileName>
+    <sourceCalendarYear>2019</sourceCalendarYear>
   </head>
   <data>
     <item>

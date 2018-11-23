@@ -10,6 +10,7 @@
     <title>Православный календарь на 2019 год</title>
     <sourceXmlFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx_dir/word/document.xml</sourceXmlFileName>
     <sourceDocxFileName>/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx</sourceDocxFileName>
+    <sourceCalendarYear>2019</sourceCalendarYear>
   </head>
   <body>
     <item type="section" id="" style="Normal" size="24">

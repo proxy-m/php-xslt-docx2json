@@ -24,11 +24,11 @@
     <xsl:template match="head/*">
         <xsl:variable name="headerParamName"><xsl:value-of select="local-name()"/></xsl:variable>
         <xsl:variable name="headerParamValue"><xsl:value-of select="."/></xsl:variable>
-        <xsl:if test="$headerParamName = 'sourceDocxFileName' or $headerParamName = 'sourceXmlFileName'">
+        <!-- <xsl:if test="$headerParamName = 'sourceDocxFileName' or $headerParamName = 'sourceXmlFileName'"> -->
         <!--<xsl:value-of select="string(concat('&lt;param key="', $headerParamName, '" value="', $headerParamValue, '"&gt;&lt;/param&gt;'))"/>-->
         <!-- <xsl:value-of select="concat('&lt;param key=', $headerParamName,  ' value=', $headerParamValue, '/param', 'dfae')"/> -->
         <xsl:value-of select="concat('&lt;', $headerParamName,  '&gt;', $headerParamValue, '&lt;/', $headerParamName,  '&gt;')"/>
-        </xsl:if>
+        <!-- </xsl:if> -->
     </xsl:template>
 
     <xsl:template match="body">
@@ -54,8 +54,8 @@
             <xsl:otherwise>
 
                 <xsl:variable name="valueOfContent0" select="translate($valueOfContent, '()123456789', '00000000000')"/>
-                <!-- <xsl:variable name="valueOfContentS" select="substring-before($valueOfContent0, ',')"/> -->
-                <xsl:variable name="valueOfContentZ" select="substring-before($valueOfContent0, ' ')"/>
+                <xsl:variable name="valueOfContentS" select="substring-before(concat($valueOfContent0, ','), ',')"/>
+                <xsl:variable name="valueOfContentZ" select="substring-before(concat($valueOfContentS, ' '), ' ')"/>
                 
                 <xsl:choose>
                     <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000' or $valueOfContentZ='00000000'">

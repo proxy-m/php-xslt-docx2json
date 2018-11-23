@@ -38,7 +38,30 @@
                     <!-- <xsl:variable name="valueOfDate"><xsl:value-of select="$valueOfContent"/> -->
             <xsl:when test="$valueOfDate='000'"></xsl:when>
             <xsl:otherwise>
-    {"day" : "<xsl:value-of select="$valueOfDate"/>", "scripture" : "<xsl:apply-templates/>"}<xsl:if test="position() != last()">,</xsl:if></xsl:otherwise>
+<xsl:variable name="valueOfDateZ" select="normalize-space(substring-before(concat($valueOfDate, ','), ','))"/><!-- date without day of week name -->
+<xsl:variable name="dayOfWeek" select="normalize-space(substring-after($valueOfDate, ','))"/><!-- Day of Week -->
+<xsl:variable name="valueOfDateDR" select="substring-before(concat($valueOfDateZ, ' '), ' ')"/><!-- Day Raw -->
+<xsl:variable name="valueOfDateMN" select="substring-after($valueOfDateZ, ' ')"/><!-- Month Name -->
+<xsl:variable name="valueOfDateMNU" select="translate($valueOfDateMN, 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя', 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')"/><!-- Month Name to Upper case -->
+<xsl:variable name="valueOfDateDS" select="substring-before(concat($valueOfDateDR, '('), '(')"/><!-- Day Short -->
+<xsl:variable name="valueOfDateDD" select="format-number($valueOfDateDS, '#00')"/><!-- standard 2-digit day format -->
+<xsl:variable name="valueOfDateMSH"><!-- Month SHorh name --><xsl:choose>
+    <xsl:when test="$valueOfDateMNU='ЯНВАРЯ'">1</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ФЕВРАЛЯ'">2</xsl:when>
+    <xsl:when test="$valueOfDateMNU='МАРТА'">3</xsl:when>
+    <xsl:when test="$valueOfDateMNU='АПРЕЛЯ'">4</xsl:when>
+    <xsl:when test="$valueOfDateMNU='МАЯ'">5</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ИЮНЯ'">6</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ИЮЛЯ'">7</xsl:when>
+    <xsl:when test="$valueOfDateMNU='АВГУСТА'">8</xsl:when>
+    <xsl:when test="$valueOfDateMNU='СЕНТЯБРЯ'">9</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ОКТЯБРЯ'">10</xsl:when>
+    <xsl:when test="$valueOfDateMNU='НОЯБРЯ'">11</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ДЕКАБРЯ'">12</xsl:when>
+    <xsl:otherwise>0</xsl:otherwise>
+</xsl:choose></xsl:variable>
+<xsl:variable name="valueOfDateMM" select="format-number($valueOfDateMSH, '#00')"/><!-- standard 2-digit month format -->
+    {"day" : "<xsl:value-of select="concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD)"/>"<!--, "dayOfWeek": "<xsl:value-of select="$dayOfWeek"/>"-->, "scripture" : "<xsl:apply-templates select='./scripture'/>"}<xsl:if test="position() != last()">,</xsl:if></xsl:otherwise>
     <!-- </xsl:when> -->
 <!-- <xsl:otherwise><xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise></xsl:choose></xsl:otherwise> -->
         </xsl:choose>
