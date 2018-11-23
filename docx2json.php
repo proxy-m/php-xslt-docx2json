@@ -19,8 +19,12 @@
 
     function force_create_parent_dir(string $full_file_name) {
         $output_dir = dirname($full_file_name);
-        echo "dir: $output_dir" . PHP_EOL;
-        return mkdir($output_dir, 0777, true);
+        //echo "dir: $output_dir" . PHP_EOL;
+        if (is_dir($output_dir)) {
+            return TRUE;
+        } else {
+            return mkdir($output_dir, 0777, true);
+        }
     }
 
     function get_calendar_year(string $source_calendar_filename) {
@@ -236,7 +240,7 @@
                 }
                 $content = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
                 $output_filename = $output_dirname . $zip_entry_name;
-                echo "output_filename: $output_filename" . PHP_EOL;
+                //echo "output_filename: $output_filename" . PHP_EOL;
                 if (!$main_entry_name) {
                     $main_entry_name = $zip_entry_name;
                 }
@@ -293,12 +297,10 @@
         public function __construct(string $calendar_year, string $source_docx_filename, string $xslt_transformation_1_to_xml, string $output_xml_filename_1/*, $xslt_transformation_2_to_xml , $xslt_transformation_3_to_json, string $output_json_filename*/) {
             $this->source_extracted_xml = null;
             $this->source_docx_filename = $source_docx_filename;
-            ///if (!$forced_source_xmls) {
-                $forced_source_xmls = $this->extract_word_entry_from_docx();
-                if (!$forced_source_xmls) {
-                    return FALSE;
-                }
-            ///}
+            $forced_source_xmls = $this->extract_word_entry_from_docx();
+            if (!$forced_source_xmls) {
+                return FALSE;
+            }
             
             parent::__construct($calendar_year, $forced_source_xmls, $xslt_transformation_1_to_xml, $output_xml_filename_1);
 
@@ -312,9 +314,6 @@
                 return FALSE;
             }
             $output_xml_filename = $this->output_xml_filename_1;
-            // if (!$output_xml_filename) {
-            //     $output_xml_filename = './output/' . basename($forced_source_xml[0]) . "_out.xml"; ///'./output/output.xml';
-            // }
             return $this->transform_to_xml($this->source_extracted_xml, $output_xml_filename);
         }
     }
@@ -440,7 +439,7 @@
     ///$source_calendar_filename = 'https://www.rop.ru/d/3000/d/calendar_2019_0.doc';
     $calendar_year = get_calendar_year($source_calendar_filename);
 
-    echo $calendar_year . PHP_EOL;
+    echo 'calendar_year from filename: ' . $calendar_year . PHP_EOL;
 
     // $docxToxml = new DocxToXml($calendar_year, '/home/proxym/php-xslt-docx2json/input/calendar_2019_0.docx', '/home/proxym/php-xslt-docx2json/wordtoxml_xslt1.xsl', '/home/proxym/php-xslt-docx2json/output/calendar_2019_0.xml'/*TODO*/);
     // $outputXml = $docxToxml->transform_to_xml_1();
