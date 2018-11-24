@@ -265,20 +265,25 @@
                 return FALSE;
             }
             $source_dir = "./input";
-            $source_docx_tmp = $source_dir . "/" . basename($source_document_url);
-            force_create_parent_dir($source_docx_tmp);
-            $good = file_put_contents($source_docx_tmp, $source_docx_data)!==FALSE;
+            $source_document_tmp = $source_dir . "/" . basename($source_document_url);
+            force_create_parent_dir($source_document_tmp);
+            $good = file_put_contents($source_document_tmp, $source_docx_data)!==FALSE;
             if (!$good) {
                 return FALSE;
             }
-            $ext = pathinfo($source_docx_tmp, PATHINFO_EXTENSION);
+            $ext = pathinfo($source_document_tmp, PATHINFO_EXTENSION);
             if ($ext != "docx") {
-                echo "NOT docx file on input `{$source_docx_tmp}`, so try to convert with libreofflice ... " . PHP_EOL;
-                $sourceFile = $source_docx_tmp;
-                $outputDirectory = dirname($sourceFile);                    
-                exec("/usr/bin/libreoffice --headless --convert-to docx {$sourceFile} --outdir {$outputDirectory}"); ///
-                $source_docx_tmp = $outputDirectory . '/' . pathinfo($source_docx_tmp, PATHINFO_FILENAME) . ".docx";
-                echo "new docx filename: `{$source_docx_tmp}`" . PHP_EOL;
+                echo "NOT docx file on input `{$source_document_tmp}`, so you must convert it to docx first." . PHP_EOL;
+                echo "Firstly, install (`apt install libreoffice` or `yum/rpm install libreoffice`) or find (`which libreoffice`) libreoffice (usually it is /usr/bin/libreoffice )." . PHP_EOL;
+                $sourceFile = $source_document_tmp;
+                $outputDirectory = dirname($sourceFile);
+                $source_docx_tmp = $outputDirectory . '/' . pathinfo($source_document_tmp, PATHINFO_FILENAME) . ".docx";
+                echo "Secondary, convert your `{$source_document_tmp}` to `{$source_docx_tmp}` with like this: " . PHP_EOL . " libreoffice --headless --convert-to docx {$sourceFile} --outdir {$outputDirectory}" . PHP_EOL; ///
+                echo "Thirdly, rerun the program with `docx` file (`{$source_docx_tmp}`) on input." . PHP_EOL;
+                $source_docx_tmp = FALSE; // auto covertion was removed.
+                exit(2);
+            } else {
+                $source_docx_tmp = $source_document_tmp;
             }
             return $source_docx_tmp;
         }
