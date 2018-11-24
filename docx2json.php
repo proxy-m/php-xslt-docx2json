@@ -86,7 +86,7 @@
                 $xmldoc->documentElement->appendChild($xmldoc->importNode($child_xmldoc->documentElement, true));
             }
 
-            $xsl = new XSLTProcessor();
+            $xsl = new \XSLTProcessor();
             $xsl->importStyleSheet($xsldoc);
             $xsl->setParameter("", "sourceXmlFileName", $from_xml_filename[0]);
             if ($this->calendar_year) {

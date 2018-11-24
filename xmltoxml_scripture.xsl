@@ -12,6 +12,7 @@
                 xmlns:dcterms="http://purl.org/dc/terms/"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:f="urn:docx2json:intermediary"
+                xmlns:date="http://exslt.org/dates-and-times"
                 exclude-result-prefixes="w r rels a wp cp dc dcterms mc f">
 
     <xsl:output method="xml" indent="no" encoding="UTF-8" />
@@ -20,7 +21,7 @@
     <xsl:template match="/"><doc><xsl:apply-templates/></doc></xsl:template>
 
     <!-- document properties .e.g title -->
-    <xsl:template match="head"><head><xsl:apply-templates/></head></xsl:template>
+    <xsl:template match="head"><head><xsl:apply-templates/><now><xsl:value-of select="date:date-time()"/></now></head></xsl:template>
     <xsl:template match="head/*">
         <xsl:variable name="headerParamName"><xsl:value-of select="local-name()"/></xsl:variable>
         <xsl:variable name="headerParamValue"><xsl:value-of select="."/></xsl:variable>
@@ -60,9 +61,39 @@
                 <xsl:choose>
                     <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000' or $valueOfContentZ='00000000'">
 <xsl:variable name="valueOfDate"><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:variable>&#x3c;/dateInfo&#x3e;
+
+<xsl:variable name="valueOfDateZ" select="normalize-space(substring-before(concat($valueOfDate, ','), ','))"/><!-- date without day of week name -->
+<xsl:variable name="dayOfWeek" select="normalize-space(substring-after($valueOfDate, ','))"/><!-- Day of Week -->
+<xsl:variable name="valueOfDateDR" select="substring-before(concat($valueOfDateZ, ' '), ' ')"/><!-- Day Raw -->
+<xsl:variable name="valueOfDateMN" select="substring-after($valueOfDateZ, ' ')"/><!-- Month Name -->
+<xsl:variable name="valueOfDateMNU" select="translate($valueOfDateMN, 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя', 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')"/><!-- Month Name to Upper case -->
+<xsl:variable name="valueOfDateDS" select="substring-before(concat($valueOfDateDR, '('), '(')"/><!-- Day Short old style (Julian calendar) -->
+<xsl:variable name="valueOfDateDD" select="format-number($valueOfDateDS, '#00')"/><!-- standard 2-digit day format -->
+<xsl:variable name="valueOfDateMSH"><!-- Month SHort name --><xsl:choose>
+    <xsl:when test="$valueOfDateMNU='ЯНВАРЯ'">1</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ФЕВРАЛЯ'">2</xsl:when>
+    <xsl:when test="$valueOfDateMNU='МАРТА'">3</xsl:when>
+    <xsl:when test="$valueOfDateMNU='АПРЕЛЯ'">4</xsl:when>
+    <xsl:when test="$valueOfDateMNU='МАЯ'">5</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ИЮНЯ'">6</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ИЮЛЯ'">7</xsl:when>
+    <xsl:when test="$valueOfDateMNU='АВГУСТА'">8</xsl:when>
+    <xsl:when test="$valueOfDateMNU='СЕНТЯБРЯ'">9</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ОКТЯБРЯ'">10</xsl:when>
+    <xsl:when test="$valueOfDateMNU='НОЯБРЯ'">11</xsl:when>
+    <xsl:when test="$valueOfDateMNU='ДЕКАБРЯ'">12</xsl:when>
+    <xsl:otherwise>0</xsl:otherwise>
+</xsl:choose></xsl:variable>
+<xsl:variable name="valueOfDateMM" select="format-number($valueOfDateMSH, '#00')"/><!-- standard 2-digit month format -->
+<xsl:variable name="dateOld"><xsl:value-of select="date:date(concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD))"/></xsl:variable>
+<xsl:variable name="date"><xsl:value-of select="date:add($dateOld, 'P13D')"/></xsl:variable>
     &lt;/item&gt;
     &lt;item&gt;
-        &#x3c;dateText&#x3e;<xsl:value-of select="$valueOfDate"/>&#x3c;/dateText&#x3e;&#x3c;dateInfo&#x3e;</xsl:when>
+        &#x3c;dateText&#x3e;<xsl:value-of select="$valueOfDateZ"/>&#x3c;/dateText&#x3e;
+        &#x3c;dateOld&#x3e;<xsl:value-of select="$dateOld"/>&#x3c;/dateOld&#x3e;
+        &#x3c;date&#x3e;<xsl:value-of select="$date"/>&#x3c;/date&#x3e;
+        &#x3c;dayOfWeek&#x3e;<xsl:value-of select="$dayOfWeek"/>&#x3c;/dayOfWeek&#x3e;
+        &#x3c;dateInfo&#x3e;</xsl:when>
                     <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise>
                 </xsl:choose>
             </xsl:otherwise>
