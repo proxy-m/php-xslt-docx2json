@@ -109,8 +109,10 @@
     <!-- <xsl:template match="item[@content='']">
     </xsl:template> -->
 
-    <!-- <xsl:template match="f:strikethrough">&lt;f:s&gt;<xsl:apply-templates/>&lt;/f:s&gt;</xsl:template> -->
-    <!-- <xsl:template match="f:line">&lt;f:l&gt;<xsl:apply-templates/>&lt;/f:l&gt;</xsl:template> -->
+    <xsl:template match="f:strikethrough">&lt;del&gt;<xsl:apply-templates/>&lt;/del&gt;</xsl:template>
+    <xsl:template match="del">&lt;del&gt;<xsl:apply-templates/>&lt;/del&gt;</xsl:template>
+    <xsl:template match="ins">&lt;ins&gt;<xsl:apply-templates/>&lt;/ins&gt;</xsl:template>
+    <xsl:template match="span">&lt;span&gt;<xsl:apply-templates/>&lt;/span&gt;</xsl:template>
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
     

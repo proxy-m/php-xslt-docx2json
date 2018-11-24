@@ -100,7 +100,7 @@
         }
 
         protected function beautifyOutputXmlData(string $outputXmlData): string {
-            $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'f:line');
+            $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'ins', 'del','f:line', 'span');
             foreach ($formattingTags as $tag) {
 				// Convert parallel repeated tags to single instance
 				// e.g. `<i:x>foo</i:x>  <i:x>bar</i:x>` to `<i:x>foo bar</i:x>`

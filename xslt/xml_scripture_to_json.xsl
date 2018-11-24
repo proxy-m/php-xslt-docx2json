@@ -55,6 +55,11 @@
     <xsl:template match="b"><b><xsl:value-of select="."/></b></xsl:template>
     <xsl:template match="i"><xsl:if test="not(position() = last())"><i><xsl:value-of select="."/></i></xsl:if></xsl:template>
 
+    <xsl:template match="del"><del><xsl:value-of select="."/></del></xsl:template>
+    <xsl:template match="s"><del><xsl:value-of select="."/></del></xsl:template>
+    <xsl:template match="ins"><ins><xsl:value-of select="."/></ins></xsl:template>
+    <xsl:template match="u"><ins><xsl:value-of select="."/></ins></xsl:template>
+
     <xsl:template name="i_scripture"><xsl:value-of select="(./dateInfo/i)[last()]"/></xsl:template>
 
     <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')" /> -->

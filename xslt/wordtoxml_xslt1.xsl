@@ -155,15 +155,20 @@
         </xsl:choose>
     </xsl:template>
 
+    <!-- Text content -->
     <xsl:template match="w:r">
         <xsl:choose>
-            <xsl:when test="w:rPr/w:b[not(@w:val)]"><f:bold><xsl:apply-templates/></f:bold></xsl:when>
-            <xsl:when test="w:rPr/w:b[@w:val='true']"><f:bold><xsl:apply-templates/></f:bold></xsl:when>
-            <xsl:when test="w:rPr/w:i[not(@w:val)]"><f:italic><xsl:apply-templates/></f:italic></xsl:when>
-            <xsl:when test="w:rPr/w:i[@w:val='true']"><f:italic><xsl:apply-templates/></f:italic></xsl:when>
+            <xsl:when test="w:rPr/w:b[not(@w:val) or @w:val='true']"><f:bold><xsl:apply-templates/></f:bold></xsl:when>
+            <xsl:when test="w:rPr/w:i[not(@w:val) or @w:val='true']"><f:italic><xsl:apply-templates/></f:italic></xsl:when>
             <xsl:when test="w:rPr/w:highlight"><span style="background-color:{w:rPr/w:highlight/@w:val}"><xsl:apply-templates/></span></xsl:when>
+            <xsl:when test="w:rPr/w:strike[not(@w:val) or @w:val='true']"><f:strikethrough><xsl:apply-templates/></f:strikethrough></xsl:when>
+            <xsl:when test="w:rPr/w:ins[not(@w:val) or @w:val='true']"><ins><xsl:apply-templates/></ins></xsl:when>
+            <xsl:when test="w:rPr/w:del[not(@w:val) or @w:val='true']"><del><xsl:apply-templates/></del></xsl:when>
             <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    <xsl:template match="w:br">
+        <f:linebreak />
     </xsl:template>
 
     <!-- <xsl:template match="w:t"><xsl:value-of select="translate(.,'�Â','')"/></xsl:template> -->
