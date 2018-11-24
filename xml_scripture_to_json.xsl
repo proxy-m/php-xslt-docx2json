@@ -33,7 +33,7 @@
     <xsl:template match="item">
             <!-- <xsl:choose> -->
                 <!-- <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000'"> -->
-        <xsl:variable name="valueOfDate" select="./day"/>
+        <xsl:variable name="valueOfDate" select="./dateText"/>
         <xsl:choose>
                     <!-- <xsl:variable name="valueOfDate"><xsl:value-of select="$valueOfContent"/> -->
             <xsl:when test="$valueOfDate='000'"></xsl:when>
@@ -61,7 +61,7 @@
     <xsl:otherwise>0</xsl:otherwise>
 </xsl:choose></xsl:variable>
 <xsl:variable name="valueOfDateMM" select="format-number($valueOfDateMSH, '#00')"/><!-- standard 2-digit month format -->
-    {"day" : "<xsl:value-of select="concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD)"/>"<!--, "dayOfWeek": "<xsl:value-of select="$dayOfWeek"/>"-->, "scripture" : "<xsl:apply-templates select='./scripture'/>"}<xsl:if test="not(position() = last())">,</xsl:if></xsl:otherwise>
+    {"day" : "<xsl:value-of select="concat($sourceCalendarYear, '-', $valueOfDateMM, '-', $valueOfDateDD)"/>"<!--, "dayOfWeek": "<xsl:value-of select="$dayOfWeek"/>"-->, "scripture" : "<xsl:call-template name='i_scripture'/>", "info" : "<xsl:apply-templates select='./dateInfo'/>"}<xsl:if test="not(position() = last())">,</xsl:if></xsl:otherwise>
     <!-- </xsl:when> -->
 <!-- <xsl:otherwise><xsl:value-of select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise></xsl:choose></xsl:otherwise> -->
         </xsl:choose>
@@ -73,7 +73,9 @@
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
     <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
     <xsl:template match="b"><b><xsl:value-of select="."/></b></xsl:template>
-    <xsl:template match="i"><i><xsl:value-of select="."/></i></xsl:template>
+    <xsl:template match="i"><xsl:if test="not(position() = last())"><i><xsl:value-of select="."/></i></xsl:if></xsl:template>
+
+    <xsl:template name="i_scripture"><xsl:value-of select="(./dateInfo/i)[last()]"/></xsl:template>
 
     <!-- <xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')" /> -->
 

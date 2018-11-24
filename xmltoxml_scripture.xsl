@@ -35,7 +35,7 @@
 <data>
 <xsl:variable name="valueOfDate000">000</xsl:variable>
     <item>
-        <day><xsl:value-of select="$valueOfDate000"/></day><scripture><xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="$itemsList"/></scripture>
+        <dateText><xsl:value-of select="$valueOfDate000"/></dateText><dateInfo><xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="$itemsList"/></dateInfo>
     </item>    
 </data>
 </xsl:template>
@@ -59,10 +59,10 @@
                 
                 <xsl:choose>
                     <xsl:when test="$valueOfContentZ='00' or $valueOfContentZ='000' or $valueOfContentZ='0000' or $valueOfContentZ='00000' or $valueOfContentZ='000000' or $valueOfContentZ='0000000' or $valueOfContentZ='00000000'">
-<xsl:variable name="valueOfDate"><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:variable>&#x3c;/scripture&#x3e;
+<xsl:variable name="valueOfDate"><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:variable>&#x3c;/dateInfo&#x3e;
     &lt;/item&gt;
     &lt;item&gt;
-        &#x3c;day&#x3e;<xsl:value-of select="$valueOfDate"/>&#x3c;/day&#x3e;&#x3c;scripture&#x3e;</xsl:when>
+        &#x3c;dateText&#x3e;<xsl:value-of select="$valueOfDate"/>&#x3c;/dateText&#x3e;&#x3c;dateInfo&#x3e;</xsl:when>
                     <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise>
                 </xsl:choose>
             </xsl:otherwise>
