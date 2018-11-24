@@ -103,8 +103,10 @@
             $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'f:line');
             foreach ($formattingTags as $tag) {
 				// Convert parallel repeated tags to single instance
-				// e.g. `<i:x>foo</i:x><i:x>bar</i:x>` to `<i:x>foo bar</i:x>`
-				$outputXmlData = preg_replace("/(<\/{$tag}>)[ ]*<{$tag}>/", ' ', $outputXmlData);
+				// e.g. `<i:x>foo</i:x>  <i:x>bar</i:x>` to `<i:x>foo bar</i:x>`
+				$outputXmlData = preg_replace("/(<\/{$tag}>)[ ]+<{$tag}>/", ' ', $outputXmlData);
+				// e.g. `<i:x>foo_</i:x><i:x>bar</i:x>` to `<i:x>foo_bar</i:x>`
+				$outputXmlData = preg_replace("/(<\/{$tag}>)<{$tag}>/", '', $outputXmlData);
 
 				// Remove any number of spaces that follow the opening tag
 				$outputXmlData = preg_replace("/(<{$tag}[^>]*>)[ ]*/", ' \\1', $outputXmlData);

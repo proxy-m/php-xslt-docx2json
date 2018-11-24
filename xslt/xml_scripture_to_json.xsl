@@ -51,7 +51,7 @@
     <!-- <xsl:template match="f:line">&lt;f:l&gt;<xsl:apply-templates/>&lt;/f:l&gt;</xsl:template> -->
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
-    <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
+    <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0a;', '')"/></xsl:template>
     <xsl:template match="b"><b><xsl:value-of select="."/></b></xsl:template>
     <xsl:template match="i"><xsl:if test="not(position() = last())"><i><xsl:value-of select="."/></i></xsl:if></xsl:template>
 

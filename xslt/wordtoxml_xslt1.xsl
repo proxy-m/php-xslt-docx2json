@@ -166,7 +166,8 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="w:t"><xsl:value-of select="translate(.,'�Â','')"/></xsl:template>
+    <!-- <xsl:template match="w:t"><xsl:value-of select="translate(.,'�Â','')"/></xsl:template> -->
+    <xsl:template match="w:t"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
 
     <!--lists-->
     <!-- next template's only purpose is to fix in a bug in Word where headings
