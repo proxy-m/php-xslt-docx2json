@@ -99,7 +99,7 @@
         &#x3c;dayOfWeek&#x3e;<xsl:value-of select="$dayOfWeek"/>&#x3c;/dayOfWeek&#x3e;
         &#x3c;dateInfo&#x3e;</xsl:when>
                     <!-- <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise> -->
-                    <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:otherwise>
+                    <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="concat($valueOfContent, ' ')"/></xsl:otherwise>
                     <!-- <xsl:otherwise><xsl:apply-templates disable-output-escaping="yes" select="./content"/></xsl:otherwise> -->
                 </xsl:choose>
             </xsl:otherwise>

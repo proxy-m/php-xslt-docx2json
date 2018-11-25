@@ -105,11 +105,19 @@
             $outputXmlData = preg_replace('/&#x3c;/', '<', $outputXmlData);
             $outputXmlData = preg_replace('/&#x3e;/', '>', $outputXmlData);
             $outputXmlData = preg_replace('/&quot;/', '\'', $outputXmlData);
-            $outputXmlData = preg_replace('/"/', '\'', $outputXmlData);
+            // $outputXmlData = preg_replace('/"/', '\'', $outputXmlData);
+
+            $formattingTagsBold = array('f:bold', 'b');
+            foreach ($formattingTagsBold as $tag) {
+				// Convert parallel repeated tags to single instance: 1
+                // e.g. `<b:x>foo</i:x>  <b:x>bar</b:x>` to `<b:x>foo bar</b:x>`
+                // e.g. `<b:x>foo</i:x><b:x>bar</b:x>` to `<b:x>foo bar</b:x>`
+				$outputXmlData = preg_replace("/(<\/{$tag}>)[ ]*<{$tag}>/", ' ', $outputXmlData);
+			}
 
             $formattingTags = array('f:italic', 'f:strikethrough', 'ins', 'del','f:line', 'span', 'i');
             foreach ($formattingTags as $tag) {
-				// Convert parallel repeated tags to single instance
+				// Convert parallel repeated tags to single instance: 2
 				// e.g. `<i:x>foo</i:x>  <i:x>bar</i:x>` to `<i:x>foo bar</i:x>`
 				$outputXmlData = preg_replace("/(<\/{$tag}>)[ ]+<{$tag}>/", ' ', $outputXmlData);
 				// e.g. `<i:x>foo_</i:x><i:x>bar</i:x>` to `<i:x>foo_bar</i:x>`
@@ -119,7 +127,7 @@
 				$outputXmlData = preg_replace("/(<{$tag}[^>]*>)[ ]*/", ' \\1', $outputXmlData);
 
 				// Remove multiple spaces before closing tags
-                $outputXmlData = preg_replace("/[ ]*<\/{$tag}>/", "</{$tag}>", $outputXmlData);
+                $outputXmlData = preg_replace("/[ ]+<\/{$tag}>/", " </{$tag}>", $outputXmlData);
                 
                 // Remove multiple spaces before opening tags
 				$outputXmlData = preg_replace("/[ ]+<{$tag}>/", " <{$tag}>", $outputXmlData);
@@ -128,10 +136,8 @@
             // Remove leading whitespace before closing tags
             $outputXmlData = preg_replace('/\s+(\<\/)/m', '$1', $outputXmlData);
 
-            // Remove whitespace between tags
-            $outputXmlData = preg_replace('/(\>)\s*(\<)/m', '$1$2', $outputXmlData);
-
-            
+            // Remove multiple whitespace between tags
+            $outputXmlData = preg_replace('/(\>)\s+(\<)/m', '$1 $2', $outputXmlData);
 
             return $outputXmlData;
         }
