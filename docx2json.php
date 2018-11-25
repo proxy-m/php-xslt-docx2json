@@ -100,7 +100,14 @@
         }
 
         protected function beautifyOutputXmlData(string $outputXmlData): string {
-            $formattingTags = array('f:bold', 'f:italic', 'f:strikethrough', 'ins', 'del','f:line', 'span');
+            $outputXmlData = preg_replace('/&lt;/', '<', $outputXmlData);
+            $outputXmlData = preg_replace('/&gt;/', '>', $outputXmlData);
+            $outputXmlData = preg_replace('/&#x3c;/', '<', $outputXmlData);
+            $outputXmlData = preg_replace('/&#x3e;/', '>', $outputXmlData);
+            $outputXmlData = preg_replace('/&quot;/', '\'', $outputXmlData);
+            $outputXmlData = preg_replace('/"/', '\'', $outputXmlData);
+
+            $formattingTags = array('f:italic', 'f:strikethrough', 'ins', 'del','f:line', 'span', 'i');
             foreach ($formattingTags as $tag) {
 				// Convert parallel repeated tags to single instance
 				// e.g. `<i:x>foo</i:x>  <i:x>bar</i:x>` to `<i:x>foo bar</i:x>`
@@ -112,17 +119,19 @@
 				$outputXmlData = preg_replace("/(<{$tag}[^>]*>)[ ]*/", ' \\1', $outputXmlData);
 
 				// Remove multiple spaces before closing tags
-				$outputXmlData = preg_replace("/[ ]*<\/{$tag}>/", "</{$tag}>", $outputXmlData);
+                $outputXmlData = preg_replace("/[ ]*<\/{$tag}>/", "</{$tag}>", $outputXmlData);
+                
+                // Remove multiple spaces before opening tags
+				$outputXmlData = preg_replace("/[ ]+<{$tag}>/", " <{$tag}>", $outputXmlData);
 			}
             
             // Remove leading whitespace before closing tags
-            $outputXmlData = preg_replace('/\s*(\<\/)/m', '$1', $outputXmlData);
+            $outputXmlData = preg_replace('/\s+(\<\/)/m', '$1', $outputXmlData);
 
             // Remove whitespace between tags
             $outputXmlData = preg_replace('/(\>)\s*(\<)/m', '$1$2', $outputXmlData);
 
-            $outputXmlData = preg_replace('/&lt;/', '<', $outputXmlData);
-            $outputXmlData = preg_replace('/&gt;/', '>', $outputXmlData);
+            
 
             return $outputXmlData;
         }

@@ -39,6 +39,7 @@
             <xsl:when test="$dateText='000' or $date=''"></xsl:when>
             <xsl:otherwise>
     {"day" : "<xsl:value-of select="$date"/>",
+     "dayOfWeek" : "<xsl:value-of select="./dayOfWeek"/>",
      "scripture" : "<xsl:call-template name='i_scripture'/>",
      "info" : "<xsl:apply-templates select='./dateInfo'/>"
     }<xsl:if test="not(position() = last())">,</xsl:if></xsl:otherwise>
@@ -52,8 +53,9 @@
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
     <xsl:template match="text()"><xsl:value-of select="translate(.,'&#x0a;', '')"/></xsl:template>
+    <xsl:template match="dateInfo/i[last()]"></xsl:template>
+    <xsl:template match="dateInfo/i[position() &lt; last()]"><i><xsl:value-of select="."/></i></xsl:template>
     <xsl:template match="b"><b><xsl:value-of select="."/></b></xsl:template>
-    <xsl:template match="i"><xsl:if test="not(position() = last())"><i><xsl:value-of select="."/></i></xsl:if></xsl:template>
 
     <xsl:template match="del"><del><xsl:value-of select="."/></del></xsl:template>
     <xsl:template match="s"><del><xsl:value-of select="."/></del></xsl:template>

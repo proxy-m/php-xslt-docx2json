@@ -18,37 +18,41 @@
     <xsl:output method="xml" indent="no" encoding="UTF-8" />
     <xsl:strip-space elements="*"/>
 
-    <xsl:template match="/"><doc><xsl:apply-templates/></doc></xsl:template>
+    <xsl:template match="/"><doc>
+        <xsl:apply-templates/>
+    </doc></xsl:template>
 
     <!-- document properties .e.g title -->
-    <xsl:template match="head"><head><xsl:apply-templates/><now><xsl:value-of select="date:date-time()"/></now></head></xsl:template>
+    <xsl:template match="head">
+        <head><now><xsl:value-of select="date:date-time()"/></now>
+            <xsl:apply-templates/>
+        </head>
+    </xsl:template>
     <xsl:template match="head/*">
         <xsl:variable name="headerParamName"><xsl:value-of select="local-name()"/></xsl:variable>
         <xsl:variable name="headerParamValue"><xsl:value-of select="."/></xsl:variable>
-        <!-- <xsl:if test="$headerParamName = 'sourceDocxFileName' or $headerParamName = 'sourceXmlFileName'"> -->
-        <!--<xsl:value-of select="string(concat('&lt;param key="', $headerParamName, '" value="', $headerParamValue, '"&gt;&lt;/param&gt;'))"/>-->
-        <!-- <xsl:value-of select="concat('&lt;param key=', $headerParamName,  ' value=', $headerParamValue, '/param', 'dfae')"/> -->
         <xsl:value-of select="concat('&lt;', $headerParamName,  '&gt;', $headerParamValue, '&lt;/', $headerParamName,  '&gt;')"/>
-        <!-- </xsl:if> -->
+        <xsl:apply-templates/>
     </xsl:template>
 
-    <xsl:template match="body">
-<data>
+<xsl:template match="body">
+&lt;data&gt;
 <xsl:variable name="valueOfDate000">000</xsl:variable>
-    <item>
-        <dateText><xsl:value-of select="$valueOfDate000"/></dateText><dateInfo><xsl:variable name="itemsList"><xsl:apply-templates/></xsl:variable><xsl:value-of select="$itemsList"/></dateInfo>
-    </item>    
-</data>
+    &lt;item&gt;
+        &lt;dateText&gt;<xsl:value-of select="$valueOfDate000"/>&lt;/dateText&gt;&lt;dateInfo&gt;<xsl:apply-templates />&lt;/dateInfo&gt;
+    &lt;/item&gt;
+&lt;/data&gt;
 </xsl:template>
     <!-- <xsl:template match="body">"items" : [<xsl:apply-templates/>],</xsl:template> -->
-    <xsl:template match="toc">
+    <!-- <xsl:template match="toc">
         <toc>
             <xsl:apply-templates/>
         </toc>
-    </xsl:template>
+    </xsl:template> -->
 
     <xsl:template match="item">
-        <xsl:variable name="valueOfContent"><xsl:apply-templates select="./content"/></xsl:variable> <!-- it slowing -->
+        <xsl:variable name="valueOfContent"><xsl:apply-templates select="./content"/></xsl:variable> 
+        <!-- it slowing -->
         <xsl:choose>
             <xsl:when test="$valueOfContent = ''"></xsl:when>
             <!-- <xsl:when test="$valueOfContent = ''"></xsl:when> -->
@@ -94,16 +98,19 @@
         &#x3c;date&#x3e;<xsl:value-of select="$date"/>&#x3c;/date&#x3e;
         &#x3c;dayOfWeek&#x3e;<xsl:value-of select="$dayOfWeek"/>&#x3c;/dayOfWeek&#x3e;
         &#x3c;dateInfo&#x3e;</xsl:when>
-                    <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise>
+                    <!-- <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="translate($valueOfContent, '&quot;', '&#x26;apm;')"/></xsl:otherwise> -->
+                    <xsl:otherwise><xsl:value-of disable-output-escaping="yes" select="$valueOfContent"/></xsl:otherwise>
+                    <!-- <xsl:otherwise><xsl:apply-templates disable-output-escaping="yes" select="./content"/></xsl:otherwise> -->
                 </xsl:choose>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
     <!-- <xsl:variable name="style">Footnote</xsl:variable> -->
 
-    <xsl:template match="footnoteReference"><xsl:variable name="refId" select="@refId"/>{{<xsl:value-of select="/xml/body/item[@id=$refId][@style='Footnote']"/>}}</xsl:template>
+    <xsl:template match="footnoteReference"><xsl:variable name="refId" select="@refId"/>{{<xsl:value-of select="/xml/body/item[@id=$refId][@style='Footnote' or @style='Normal']"/>}}</xsl:template>
 
     <xsl:template match="item[@style='Footnote']"></xsl:template>
+    <xsl:template match="item[@style='Normal' and not(@id='')]"></xsl:template>
     <xsl:template match="item[@style='Footer']"></xsl:template>
     <xsl:template match="item[@style='']"></xsl:template>
     <!-- <xsl:template match="item[@content='']">
@@ -115,8 +122,9 @@
     <xsl:template match="span">&lt;span&gt;<xsl:apply-templates/>&lt;/span&gt;</xsl:template>
 
     <!-- <xsl:template match="text()"><xsl:value-of select="translate(.,'�','')"/></xsl:template> -->
-    
-    <xsl:template match="text()"><xsl:value-of disable-output-escaping="yes" select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
+    <xsl:template match="head/*/text()"></xsl:template>
+    <xsl:template match="body/*/text()"></xsl:template>
+    <!-- <xsl:template match="text()"><xsl:value-of disable-output-escaping="yes" select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template> -->
     <xsl:template match="f:bold"><xsl:variable name="f_bold"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_bold = '')"><xsl:value-of select="translate(concat('&lt;b&gt;',$f_bold, '&lt;/b&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
     <xsl:template match="f:italic"><xsl:variable name="f_italic"><xsl:apply-templates/></xsl:variable><xsl:if test="not($f_italic = '')"><xsl:value-of select="translate(concat('&lt;i&gt;',$f_italic, '&lt;/i&gt;'),'&#x0d;&#x0a;', '')"/></xsl:if></xsl:template>
 

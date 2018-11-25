@@ -112,7 +112,7 @@
     <xsl:template match="w:p">
         <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val"/>
         <xsl:choose>
-            <!--<xsl:when test="w:pPr/w:widowControl"></xsl:when>-->
+            <!-- <xsl:when test="w:pPr/w:widowControl"></xsl:when> -->
             <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'ContentsHeading' ) ] ]">
                 <xsl:apply-templates select="self::*" mode="toc"/>
             </xsl:when>
@@ -167,9 +167,9 @@
             <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="w:br">
+    <!-- <xsl:template match="w:br">
         <f:linebreak />
-    </xsl:template>
+    </xsl:template> -->
 
     <!-- <xsl:template match="w:t"><xsl:value-of select="translate(.,'�Â','')"/></xsl:template> -->
     <xsl:template match="w:t"><xsl:value-of select="translate(.,'&#x0d;&#x0a;', '')"/></xsl:template>
@@ -177,7 +177,7 @@
     <!--lists-->
     <!-- next template's only purpose is to fix in a bug in Word where headings
     sometimes get put into List Elements for no reason -->
-    <xsl:template match="w:p[w:pPr/w:numPr][starts-with(w:pPr/w:pStyle/@w:val,'Heading')]" mode="ol">
+    <!-- <xsl:template match="w:p[w:pPr/w:numPr][starts-with(w:pPr/w:pStyle/@w:val,'Heading')]" mode="ol">
         <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val"/>
         <item
                 type='heading'
@@ -185,224 +185,13 @@
                 size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
             <content><xsl:apply-templates/></content>
         </item>
-    </xsl:template>
+    </xsl:template> -->
 
     <!-- OK, let's get started. First remove all list items from output -->
-    <xsl:template match="w:p[w:pPr/w:numPr]" priority="1" mode="ol"></xsl:template>
+    <!-- <xsl:template match="w:p[w:pPr/w:numPr]" priority="1" mode="ol"></xsl:template> -->
+    <!-- <xsl:template match="w:pPr/w:widowControl">&lt;f:linebreak/&gt;</xsl:template> -->
 
-    <!--
-
-      Now just match any list item not preceded by a list item.
-
-      We need to match any element not preceded by a listitem *or*
-      preceded by a list item at a different level.
-
-      We also need to check if the previous element is a list item and also a Heading, due to
-      bug in Word that causes Headers to sometimes get categorized as list elements.
-
-      The preceding element is not a list element:
-      not(preceding-sibling::*[1][self::w:p[w:pPr/w:numPr]]) or
-
-      The preceding element is a list element but it is at a different level
-      not(preceding-sibling::*[1]/w:pPr/w:numPr/w:ilvl/@w:val = self::w:p/w:pPr/w:numPr/w:ilvl/@w:val)
-
-    -->
-    <xsl:template
-            match="w:p[w:pPr/w:numPr][
-                     (
-                       not(preceding-sibling::*[1][self::w:p[w:pPr/w:numPr]]) or
-                       not(preceding-sibling::*[1]/w:pPr/w:numPr/w:ilvl/@w:val &lt;= self::w:p/w:pPr/w:numPr/w:ilvl/@w:val)
-                     ) and
-                     not(starts-with(w:pPr/w:pStyle/@w:val,'Heading'))
-                   ]"
-            priority="2" mode="ol">
-        <xsl:variable name="numId" select="w:pPr/w:numPr/w:numId/@w:val"/>
-        <xsl:variable name="ilvl" select="w:pPr/w:numPr/w:ilvl/@w:val"/>
-        <xsl:variable name="listType">
-            <xsl:value-of
-                    select="/w:document/w:numbering/w:abstractNum[@w:abstractNumId=$numId]/w:lvl[@w:ilvl=$ilvl]/w:numFmt/@w:val"/>
-        </xsl:variable>
-        <xsl:variable name="elTypeAttr">
-            <xsl:call-template name="getElTypeAttr">
-                <xsl:with-param name="listType" select="$listType"/>
-            </xsl:call-template>
-        </xsl:variable>
-        <xsl:variable name="elName">
-            <xsl:choose>
-                <xsl:when test="$listType='bullet'">ul</xsl:when>
-                <xsl:otherwise>ol</xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <item heading="false" type="list">
-            <content>
-                <xsl:element name="{$elName}">
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="$elTypeAttr"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="wtype">
-                        <xsl:value-of select="$listType"/>
-                    </xsl:attribute>
-                    <xsl:apply-templates select="." mode="ordered-list"/>
-                </xsl:element>
-            </content>
-        </item>
-    </xsl:template>
-
-    <!-- now match the list item and its next sibling, recursively so you get the entire group -->
-    <xsl:template match="w:p[w:pPr/w:numPr]" mode="ordered-list">
-        <xsl:variable name="level" select="w:pPr/w:numPr/w:ilvl/@w:val"/><!-- item level -->
-        <xsl:variable name="numId" select="w:pPr/w:numPr/w:numId/@w:val"/><!-- id of of list style -->
-        <xsl:variable name="indent">
-            <xsl:choose>
-                <xsl:when test="w:pPr/w:ind/@w:left">
-                    <xsl:value-of select="w:pPr/w:ind/@w:left"></xsl:value-of>
-                </xsl:when>
-                <xsl:otherwise>0</xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable><!-- indent of of list style -->
-        <li lvl="{$level}">
-            <xsl:apply-templates/>
-        </li>
-
-        <!-- This block is a duplicate of block in previous template.. TODO: avoid duplication? -->
-        <xsl:variable name="listType">
-            <xsl:value-of
-                    select="/w:document/w:numbering/w:abstractNum[@w:abstractNumId=$numId]/w:lvl[@w:ilvl=$level]/w:numFmt/@w:val"/>
-        </xsl:variable>
-        <xsl:variable name="elTypeAttr">
-            <xsl:call-template name="getElTypeAttr">
-                <xsl:with-param name="listType" select="$listType"/>
-            </xsl:call-template>
-        </xsl:variable>
-        <xsl:variable name="elName">
-            <xsl:choose>
-                <xsl:when test="$listType='bullet'">ul</xsl:when>
-                <xsl:otherwise>ol</xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <!-- end duplicate block -->
-
-        <xsl:choose>
-            <!-- case of node is a different ilvl (indent level) than preceding node -->
-            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:numPr/w:ilvl/@w:val!=$level]]">
-                <xsl:if test="following-sibling::*[self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]][1]"><!-- avoid orphan list el -->
-
-                    <!-- get the attributes for the bullet styles -->
-                    <xsl:variable name="nextListType">
-                        <xsl:call-template name="getListType">
-                            <xsl:with-param name="nextItem"
-                                            select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$level]][1]"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    <xsl:variable name="nextElTypeAttr">
-                        <xsl:call-template name="getElTypeAttr">
-                            <xsl:with-param name="listType" select="$nextListType"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    <!-- build the enclosing element (OL or UL) -->
-                    <xsl:element name="{$elName}">
-                        <xsl:attribute name="type">
-                            <xsl:value-of select="$nextElTypeAttr"/>
-                        </xsl:attribute>
-                        <xsl:attribute name="wtype">
-                            <xsl:value-of select="$nextListType"/>
-                        </xsl:attribute>
-                        <xsl:apply-templates select="
-                       following-sibling::*[1]
-                         [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val>$level]]
-                         [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
-                       " mode="ordered-list"/>
-                    </xsl:element>
-                    <xsl:apply-templates select="
-                    following-sibling::*
-                      [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
-                       [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
-                     [1]
-                    " mode="ordered-list"/>
-                </xsl:if>
-            </xsl:when>
-
-            <!-- case of node is a different numId (style) than preceding node -->
-            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$numId]]">
-                <xsl:if test="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]][1]"><!-- avoid orphan list el -->
-                    <!-- get the attributes for the bullet styles -->
-                    <xsl:variable name="nextListType">
-                        <xsl:call-template name="getListType">
-                            <xsl:with-param name="nextItem"
-                                            select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$numId]][1]"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    <xsl:variable name="nextElTypeAttr">
-                        <xsl:call-template name="getElTypeAttr">
-                            <xsl:with-param name="listType" select="$nextListType"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    <!-- build the enclosing element (OL or UL) -->
-                    <xsl:element name="{$elName}">
-                        <xsl:attribute name="type">
-                            <xsl:value-of select="$nextElTypeAttr"/>
-                        </xsl:attribute>
-                        <xsl:attribute name="wtype">
-                            <xsl:value-of select="$nextListType"/>
-                        </xsl:attribute>
-                        <xsl:apply-templates select="following-sibling::*[1]
-                          [self::w:p[w:pPr/w:numPr/w:numId/@w:val>$numId]]
-                          [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
-                          " mode="ordered-list"/>
-                    </xsl:element>
-                </xsl:if>
-                <xsl:apply-templates
-                        select="following-sibling::*
-                          [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
-                          [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
-                          [1]"
-                        mode="ordered-list"/>
-            </xsl:when>
-
-            <!-- case of node w:ind (indent, e.g. bullet) greater than preceding node -->
-            <xsl:when test="following-sibling::*[1][self::w:p[w:pPr/w:ind/@w:left!=$indent]]">
-                <!-- get the attributes for the bullet styles -->
-                <xsl:variable name="nextListType">
-                    <xsl:call-template name="getListType">
-                        <xsl:with-param name="nextItem"
-                                        select="following-sibling::*[self::w:p[w:pPr/w:numPr/w:numId/@w:val!=$indent]][1]"/>
-                    </xsl:call-template>
-                </xsl:variable>
-                <xsl:variable name="nextElTypeAttr">
-                    <xsl:call-template name="getElTypeAttr">
-                        <xsl:with-param name="listType" select="$nextListType"/>
-                    </xsl:call-template>
-                </xsl:variable>
-                <!-- build the enclosing element (OL or UL) -->
-                <xsl:element name="{$elName}">
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="$nextElTypeAttr"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="wtype">
-                        <xsl:value-of select="$nextListType"/>
-                    </xsl:attribute>
-                    <xsl:apply-templates select="following-sibling::*[1][self::w:p[w:pPr/w:ind/@w:left>$indent]]"
-                                         mode="ordered-list"/>
-                </xsl:element>
-                <xsl:apply-templates select="
-                  following-sibling::*
-                    [self::w:p[w:pPr/w:ind/@w:left!=$indent]]
-                    [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
-                    [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
-                    [1]
-                  " mode="ordered-list"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:apply-templates select="
-                  following-sibling::*[1]
-                    [self::w:p[w:pPr/w:numPr]]
-                    [self::w:p[w:pPr/w:numPr/w:numId/@w:val=$numId]]
-                    [self::w:p[w:pPr/w:numPr/w:ilvl/@w:val=$level]]
-                  " mode="ordered-list"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-
+ 
     <xsl:template name="getElTypeAttr">
         <xsl:param name="listType"/>
         <xsl:choose>
