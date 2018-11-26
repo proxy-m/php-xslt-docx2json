@@ -247,13 +247,9 @@
     <item type="section" id="" style="Normal" size="24">
       <content>Сщмч. Виктора <f:italic>Усова</f:italic> пресвитера (1937); сщмчч. Димитрия <f:italic>Плышевского</f:italic>, Владимира <f:italic>Пастернацкого</f:italic> пресвитеров, прмч. Пафнутия <f:italic>Костина</f:italic>, мч. Михаила <f:italic>Новоселова</f:italic> (1938); сщмч. Василия <f:italic>Архангельского</f:italic> пресвитера (1939); мч. Иоанна <f:italic>Малышева</f:italic> (1940); св. Михаила <f:italic>Розова</f:italic> исп., пресвитера (1941).</content>
     </item>
-    <item heading="false" type="list">
+    <item type="section" id="" style="Normal" size="24">
       <content>
-        <ol type="1" wtype="">
-          <li lvl="0">
-            <f:italic>Евр., 319 зач., VIII, 7–13. Мк., 33 зач., VIII, 11–21.</f:italic>
-          </li>
-        </ol>
+        <f:italic>Евр., 319 зач., VIII, 7–13. Мк., 33 зач., VIII, 11–21.</f:italic>
       </content>
     </item>
     <item type="section" id="" style="Normal" size="24">
@@ -684,13 +680,9 @@
     <item type="section" id="" style="Normal" size="24">
       <content>Мч. Иоанна <f:italic>Попова</f:italic> (1938).</content>
     </item>
-    <item heading="false" type="list">
+    <item type="section" id="" style="Normal" size="24">
       <content>
-        <ol type="1" wtype="">
-          <li lvl="0">
-            <f:italic>1 Пет., 58 зач., I, 1–2, 10–12; II, 6–10. Мк., 53 зач., XII, 1–12.</f:italic>
-          </li>
-        </ol>
+        <f:italic>1 Пет., 58 зач., I, 1–2, 10–12; II, 6–10. Мк., 53 зач., XII, 1–12.</f:italic>
       </content>
     </item>
     <item type="section" id="" style="Normal" size="24">
