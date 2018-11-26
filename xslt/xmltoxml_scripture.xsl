@@ -35,6 +35,39 @@
         <xsl:apply-templates/>
     </xsl:template>
 
+<xsl:template name='trim'>
+    <xsl:param name="s"/>
+    
+    <!--
+      for trim, just rtrim the ltrimmed string
+    -->
+    <xsl:call-template name="rtrim">
+      <xsl:with-param name="s" select="concat(substring(translate($s,' &#9;&#10;&#13;',''),1,1),substring-after($s,substring(translate($s,' &#9;&#10;&#13;',''),1,1)))"/>
+    </xsl:call-template>
+</xsl:template>
+
+  <!--
+    the placement of the recursive call allows the processor to
+    optimize tail recursion. Not all processors optimize, though.
+  -->
+<xsl:template name="rtrim">
+	<xsl:param name="s"/>
+	<xsl:param name="i" select="string-length($s)"/>
+	<xsl:choose>
+	  <xsl:when test="translate(substring($s,$i,1),' &#9;&#10;&#13;','')">
+		<xsl:value-of select="substring($s,1,$i)"/>
+	
+	  </xsl:when>
+	  <xsl:when test="$i&lt;2"/>
+	  <xsl:otherwise>
+		<xsl:call-template name="rtrim">
+		  <xsl:with-param name="s" select="$s"/>
+		  <xsl:with-param name="i" select="$i - 1"/>
+		</xsl:call-template>
+	  </xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 <xsl:template match="body">
 &lt;data&gt;
 <xsl:variable name="valueOfDate000">000</xsl:variable>
@@ -51,7 +84,8 @@
     </xsl:template> -->
 
     <xsl:template match="item">
-        <xsl:variable name="valueOfContent"><xsl:apply-templates select="./content"/></xsl:variable> 
+        <xsl:variable name="valueOfContent000"><xsl:apply-templates select="./content"/></xsl:variable> 
+        <xsl:variable name="valueOfContent"><xsl:call-template name="trim"><xsl:with-param name="s" select="$valueOfContent000"/></xsl:call-template></xsl:variable> 
         <!-- it slowing -->
         <xsl:choose>
             <xsl:when test="$valueOfContent = ''"></xsl:when>
@@ -107,10 +141,10 @@
     </xsl:template>
     <!-- <xsl:variable name="style">Footnote</xsl:variable> -->
 
-    <xsl:template match="footnoteReference"><xsl:variable name="refId" select="@refId"/>{{<xsl:value-of select="/xml/body/item[@id=$refId][@style='Footnote' or @style='Normal']"/>}}</xsl:template>
+    <xsl:template match="footnoteReference"><xsl:variable name="refId" select="@refId"/>{{<xsl:value-of select="/xml/body/item[@id=$refId][not(@id='')]"/>}}</xsl:template>
 
-    <xsl:template match="item[@style='Footnote']"></xsl:template>
-    <xsl:template match="item[@style='Normal' and not(@id='')]"></xsl:template>
+    <xsl:template match="item[@style='Footnote' or @style='FootnoteText']"></xsl:template>
+    <xsl:template match="item[not(@id='')]"></xsl:template>
     <xsl:template match="item[@style='Footer']"></xsl:template>
     <xsl:template match="item[@style='']"></xsl:template>
     <!-- <xsl:template match="item[@content='']">

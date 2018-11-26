@@ -110,7 +110,11 @@
 
     <!-- Basic Content -->
     <xsl:template match="w:p">
-        <xsl:variable name="style" select="w:pPr/w:pStyle/@w:val"/>
+        <xsl:variable name="style0"><xsl:value-of select="w:pPr/w:pStyle/@w:val"/></xsl:variable>
+        <xsl:variable name="style"><xsl:choose>
+            <xsl:when test="w:pPr[w:pStyle/@w:val]"><xsl:value-of select="$style0"/></xsl:when>
+            <xsl:otherwise>Normal</xsl:otherwise>
+        </xsl:choose></xsl:variable>
         <xsl:choose>
             <!--<xsl:when test="w:pPr/w:widowControl"></xsl:when>-->
             <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'ContentsHeading' ) ] ]">
@@ -120,7 +124,7 @@
             <xsl:when test="w:pPr[w:pStyle/@w:val[ starts-with( ., 'Heading' ) ] ]">
                 <item
                         type="heading"
-                        style="{w:pPr/w:pStyle/@w:val}"
+                        style="{$style}"
                         size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}"
                 >
                     <content>
@@ -134,7 +138,7 @@
             <xsl:when test="w:r/w:drawing">
                 <item
                         type="image"
-                        style="{w:pPr/w:pStyle/@w:val}"
+                        style="{$style}"
                         size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
                     <content>
                         <xsl:apply-templates/>
@@ -145,7 +149,7 @@
                 <item
                         type="section"
                         id="{../@w:id}"
-                        style="{w:pPr/w:pStyle/@w:val}"
+                        style="{$style}"
                         size="{/w:document/w:styles/w:style[@w:styleId=$style]/w:rPr/w:sz/@w:val}">
                     <content>
                         <xsl:apply-templates/>
