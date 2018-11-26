@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/php-cgi -f
 <?php
     require __DIR__ . '/vendor/autoload.php';
 
@@ -38,6 +38,9 @@
 
     function get_file_by_url(string $url) {
         if (startsWith($url, '/') || startsWith($url, '.')) {
+            if (!is_file($url)) {
+                return FALSE;
+            }
             return file_get_contents($url);
         } else {
             $curl = curl_init();
@@ -233,6 +236,9 @@
             $content = "";
             $output_dirname .= (endsWith($output_dirname, "/")? "" : "/");
             $main_entry_name = (count($entry_names)>0) ? $entry_names[0] : null;
+            if (!$source_zip_filename || !is_file($source_zip_filename)) {
+                return FALSE;
+            }
             $zip = zip_open($source_zip_filename);
             if (!$zip || is_numeric($zip)) {
                 return false;
@@ -308,6 +314,9 @@
         protected function extract_word_entry_from_docx() {
             if (!$this->source_extracted_xml) {
                 $source_docx_tmp = $this->get_local_docx_path($this->source_docx_filename);
+                if (!$source_docx_tmp) {
+                    return FALSE;
+                }
                 $source_extracted_xml_dir = $source_docx_tmp . "_dir";
                 force_create_parent_dir($source_extracted_xml_dir);
                 $entry_names = ["word/document.xml", "word/_rels/document.xml.rels", "word/media/", "word/footer1.xml", "word/footnotes.xml", "word/styles.xml", "docProps/app.xml", "docProps/core.xml"];
@@ -321,7 +330,7 @@
             $this->source_docx_filename = $source_docx_filename;
             $forced_source_xmls = $this->extract_word_entry_from_docx();
             if (!$forced_source_xmls) {
-                return FALSE;
+                throw new Error("incorrect forced_source_xmls: " . $forced_source_xmls);
             }
             
             parent::__construct($calendar_year, $forced_source_xmls, $xslt_transformation_1_to_xml, $output_xml_filename_1);
@@ -360,7 +369,7 @@
 
             $this->output_xml_filename_1 = $this->transform_to_xml_1();
             if (!$this->output_xml_filename_1) {
-                return FALSE;
+                throw new Error("incorrect output_xml_filename_1: " . $output_xml_filename_1);
             }
 
             $this->xslt_transformation_2_to_xml = $xslt_transformation_2_to_xml;            
@@ -437,7 +446,7 @@
             $this->output_json_filename = $output_json_filename;
             $this->outputXmlScripture = $this->transform_to_xml_scripture();
             if (!$this->outputXmlScripture) {
-                return FALSE;
+                throw new Error("incorrect outputXmlScripture: " . outputXmlScripture);
             }
             $xslt_transformation_3_to_json = './xslt/xml_scripture_to_json.xsl';
             $this->xmlToJson = new XmlToJson($calendar_year, [$this->outputXmlScripture], $xslt_transformation_3_to_json, $output_json_filename);
@@ -457,9 +466,15 @@
         }
     }
 
-    $source_calendar_filename = './input/calendar_2019_0.docx';
+    $source_calendar_filename = $_GET["source_calendar_filename"] ?? "./input/calendar_2019_0.docx";
     ///$source_calendar_filename = 'https://www.rop.ru/d/3000/d/calendar_2019_0.doc';
-    $calendar_year = get_calendar_year($source_calendar_filename);
+    $calendar_year = $_GET["calendar_year"] ?? get_calendar_year($source_calendar_filename);
+    $output_json_filename = $_GET["output_json_filename"] ?? "./output/calendar_2019.json";
+
+    if (!$source_calendar_filename || !$calendar_year || !$output_json_filename) {
+        echo "Icrorrect input (_GET) parameters(source_calendar_filename, calendar_year, output_json_filename): {$source_calendar_filename}, {$calendar_year}, {$output_json_filename}" . PHP_EOL;
+        exit(1);
+    }
 
     echo 'calendar_year from filename: ' . $calendar_year . PHP_EOL;
 
@@ -477,7 +492,7 @@
     //     exit(1);
     // }
 
-    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, $source_calendar_filename, './output/calendar_2019.json', $calendar_year);  
+    $docxToJsonScripture = new DocxToJsonScripture($calendar_year, $source_calendar_filename, $output_json_filename, $calendar_year);  
     $outputJson = $docxToJsonScripture->transform_to_json_scripture();
     if ($outputJson === FALSE) {
         echo "ERROR 3" . PHP_EOL;
